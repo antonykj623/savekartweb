@@ -52,6 +52,8 @@ dev_dependencies:
   http: ^1.2.2
   shared_preferences: ^2.2.3
   dio: ^5.3.3
+  flutter_widget_from_html: ^0.14.6
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

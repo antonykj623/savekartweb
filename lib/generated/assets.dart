@@ -5,6 +5,10 @@ class Assets {
   static const String assetsAppbaricon = 'assets/appbaricon.jpeg';
   static const String assetsDettol = 'assets/dettol.jpg';
   static const String assetsIcons = 'assets/icons.png';
+  static const String assetsPrivacyPolicy = 'assets/privacy_policy.html';
+  static const String assetsReturnpolicy = 'assets/returnpolicy.html';
+  static const String assetsShippingcancellation = 'assets/shippingcancellation.html';
   static const String assetsSplash = 'assets/splash.jpeg';
+  static const String assetsTermsandconditions = 'assets/termsandconditions.html';
 
 }

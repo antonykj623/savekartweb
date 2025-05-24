@@ -13,7 +13,7 @@ import 'apimethodes.dart';
 String imagePath = 'https://eduklader.com/public/assets/uploads/user-images/';
 
 class ApiHelper  {
-  static String baseUrl = 'https://mysaving.in/IntegraAccount/api/';
+  static String baseUrl = 'https://mysaving.in/IntegraAccount/ecommerce_api/';
   String sessionTimedOutMessage = 'Server is taking too long to respond';
   String resulturl="https://mysaveapp.com/rechargeAPINew/paymentgateway/result.php";
   String imgbaseurl="https://mysaving.in/uploads/profile/";
@@ -29,16 +29,15 @@ class ApiHelper  {
     return date.toString();
   }
 
-  Future<dynamic> get(String endpoint,
-      {bool showLoadingDialog = false,
-        bool isV5 = false,
-        bool showErrorDialog = true}) async {
-    try {
-      String url = (endpoint.startsWith(baseUrl) ? '' : baseUrl) + endpoint;
+  Future<dynamic> get(String endpoint) async {
+
+      String url =  baseUrl + endpoint;
 
 
-      String? token= await AppStorage.getString(AppStorage.token);
-      Map<String, String> headers = {"Authorization" : token.toString()};
+      String? token= await AppStorage.getString(AppStorage.token) ?? "";
+      Map<String, String> headers = {"Authorization" : token.toString(),
+        "Content-Type": "application/x-www-form-urlencoded"
+      };
 
       _logRequest('GET', url, headers);
 
@@ -48,18 +47,8 @@ class ApiHelper  {
 
       _logResponse('GET', url, headers, response);
 
-      return _processResponse(response, showErrorDialog: showErrorDialog);
-    } on SocketException {
-      // if (showLoadingDialog) AppDialogs.closeDialog();
-      // if (showErrorDialog) {
-      //   throw FetchDataException('No Internet connection');
-      // }
-    } on TimeoutException {
-      // if (showLoadingDialog) AppDialogs.closeDialog();
-      // if (showErrorDialog) {
-      //   throw ApiNotRespondingException(sessionTimedOutMessage);
-      // }
-    }
+      return response.body;
+
   }
 
   Future<dynamic> post(endpoint,
@@ -70,30 +59,34 @@ class ApiHelper  {
         bool? urlV5,
         bool showErrorDialog = true}) async {
 
+    String serverurl="";
+    Map<String, String> headers = {};
+    String? token= await AppStorage.getString(AppStorage.token) ?? "";
+    if(endpoint.toString().contains(Apimethodes.login)) {
+      serverurl = "https://mysaving.in/IntegraAccount/api/" + endpoint;
+      headers= {
+        "Content-Type": "application/x-www-form-urlencoded"
 
+      };
+    }
+    else{
+      serverurl = baseUrl + endpoint;
+      headers= {
+        "Content-Type": "application/x-www-form-urlencoded",
+    "Authorization" : token.toString()
 
-      String url = (endpoint.startsWith(baseUrl) ? '' : baseUrl) + endpoint;
-      // String token = (await AppStorage.getValue(AppStorage.token)) ?? '';
-      // Map<String, String> headers = {};
+  };
+    }
 
-      String? token= await AppStorage.getString(AppStorage.token) ?? "";
-      Map<String, String> headers = {"Authorization" : token.toString()};
-
-
-
-      var url1 = Uri.parse(url);
+      var url1 = Uri.parse(serverurl);
 
       var response = await http.post(
         url1,
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization" : token.toString()
-
-        },
-        body: formDataPayload,
+        headers: headers,
+        body:  formDataPayload,
       );
 
-return response.body;
+return response;
 
   }
 
@@ -104,8 +97,14 @@ return response.body;
     String data = "",token="";
     try {
 
+      String serverurl ="";
 
-      String serverurl = (endpoint.startsWith(baseUrl) ? '' : baseUrl) + endpoint;
+      if(method.toString().compareTo(Apimethodes.login)==0) {
+        serverurl = "https://mysaving.in/IntegraAccount/api/" + endpoint;
+      }
+      else{
+        serverurl = baseUrl + endpoint;
+      }
 
       token = "";
 

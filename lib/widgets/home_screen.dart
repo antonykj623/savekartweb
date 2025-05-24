@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,11 @@ import 'package:flutter/widgets.dart';
 import 'package:savekartweb/widgets/SettingsPage.dart';
 import 'package:savekartweb/widgets/cart_screen.dart';
 import 'package:savekartweb/widgets/product_details.dart';
-
+import 'package:http/http.dart' as http;
 import '../design/ResponsiveInfo.dart';
+import '../web/AppStorage.dart';
+import '../web/apimethodes.dart';
+import '../web/ecommerce_api_helper.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -23,7 +27,34 @@ class _HomePageState extends State<HomePage> {
 
   String cartcount="2";
 
+  final List<String> getToKnowUs = [
+    "Privacy Policy",
+    "Return and Exchange Policy",
+    "Shipping and Cancellation policy",
+    "Terms and Conditions",
 
+  ];
+
+  final List<String> connectWithUs = ["Century Gate Software Solutions Pvt Ltd\n Cosmopolitan Road,\n Aswini Junction,\n Thrissur, Kerala – 680020", " 04872 322006, +91 9846290789 ,+91 9778078739", ];
+
+
+
+
+  final List<String> helpYou = [
+    "Facebook",
+    "Twitter",
+    "Linked in",
+    "Instagram",
+
+  ];
+
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getCategories();
+  }
 
 
 
@@ -221,6 +252,42 @@ Container(),
           _buildProductSection(),
           _buildProductSection(),
           _buildProductSection(),
+          (screenWidth<700)
+              ?  Container(
+            height:screenWidth/0.8 ,
+            width: screenWidth,
+
+            color: const Color(0xFF232F3E),
+            padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                buildColumn("Quick Links", getToKnowUs),
+                const SizedBox(height: 20),
+                buildColumn("Connect with Us", connectWithUs),
+
+                const SizedBox(height: 20),
+                buildColumn("Follow us", helpYou),
+              ],
+            ) )
+                :  Container(
+
+         color: const Color(0xFF232F3E),
+         padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+         child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                buildColumn("Quick Links", getToKnowUs),
+                buildColumn("Connect with Us", connectWithUs),
+
+                buildColumn("Follow us", helpYou),
+              ],
+            ),
+          )
+
+
         ],
       ),
     )
@@ -233,6 +300,59 @@ Container(),
     );
   }
 
+  Widget buildColumn(String heading, List<String> items) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          Text(
+            heading,
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...items.map(
+                (item) {
+
+
+
+                  return GestureDetector(
+
+                    child:Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4.0),
+                      child: Text(
+                        item,
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                    ) ,
+
+                    onTap: (){
+                      if(heading.compareTo("Quick Links")==0)
+                      {
+
+                      //   "Privacy Policy",
+                      // "Return and Exchange Policy",
+                      // "Shipping and Cancellation policy",
+                      // "Terms and Conditions",
+
+                      }
+                    },
+                  )
+
+
+                    ;
+
+
+                  },
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget getMenuWidget()
   {
@@ -246,10 +366,17 @@ Container(),
             padding: EdgeInsets.all(16.0),
             child: Text('Categories', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           ),
-          _buildCategory('Ladies Wear', subCategories: ['inner wear', 'Churidar materials']),
-          _buildCategory('Men\'s Wear'),
-          _buildCategory('Men\'s Wear'),
-          _buildCategory('Men\'s Wear'),
+
+          ListView.builder(
+              itemCount: 5,
+              primary: false,
+              shrinkWrap: true,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildCategory('Ladies Wear', subCategories: ['inner wear', 'Churidar materials']);
+              })
+
+
+
         ],
       ),
     );
@@ -391,5 +518,35 @@ Container(),
 
 
       ;
+  }
+
+
+  getCategories()async
+  {
+    String responseText="";
+    String? token= await AppStorage.getString(AppStorage.token) ?? "";
+    Map<String, String> headersdata = {"Token" : token.toString()
+    };
+    final url = Uri.parse(
+      'https://mysaving.in/IntegraAccount/ecommerce_api/getCategoriesList.php?q=5236', // Use your own endpoint
+    );
+
+    try {
+      final response = await http.get(url,headers: headersdata);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+      } else {
+
+      }
+      print(responseText);
+    } catch (e) {
+      setState(() {
+        responseText = 'Failed to fetch data: $e';
+      });
+    }
+
+
   }
 }

@@ -53,4 +53,5 @@ class Apimethodes{
     static String updateWalletPoints="updateWalletPoints.php";
     static String getWalletPointsTransaction="getWalletPointsTransaction.php";
     static String retryNewOrder="retryNewOrder.php";
+    static String getCategoriesList="getCategoriesList.php";
 }

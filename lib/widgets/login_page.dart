@@ -28,6 +28,8 @@ class _LoginPageState extends State<LoginPage> {
 
   String randomnum="";
 
+  String urldata="https://mysaving.in/IntegraAccount/api/";
+
   @override
   void initState() {
     // TODO: implement initState
@@ -109,57 +111,37 @@ class _LoginPageState extends State<LoginPage> {
                           m['password']=Password.text.toString();
                           m['timestamp']=ApiHelper.getTimeStamp();
 
-                          // ApiHelper apihelper = new ApiHelper();
+                          ApiHelper apihelper = new ApiHelper();
 
-                        // String response=await
-                        // apihelper.post(Apimethodes.login+"?q="+ApiHelper.getTimeStamp(),formDataPayload: m);
-                        //
-                        // print(response);
+                        var response=await
+                        apihelper.post(Apimethodes.login+"?q="+ApiHelper.getTimeStamp(),formDataPayload: m);
 
-                          final url = Uri.parse( ApiHelper.baseUrl+Apimethodes.login+"?q="+ApiHelper.getTimeStamp());
+                        print(response);
 
-                          var response = await http.post(
-                            url,
-                            headers: {
-                              "Content-Type": "application/x-www-form-urlencoded",
-                            },
-                            body: m,
-                          );
+                          if(response!=null && response.body!=null) {
+                            if (response.statusCode == 200) {
+                              print('Success: ${response.body}');
+                              Navigator.pop(context);
+                              var js = jsonDecode(response.body);
 
-                          if (response.statusCode == 200) {
-                            print('Success: ${response.body}');
-                            Navigator.pop(context);
+                              if (js['status'].toString().compareTo("0") != 0) {
+                                AppStorage.SaveToken(
+                                    AppStorage.token, js['token'].toString());
 
-
-
-                            var js= jsonDecode(response.body) ;
-
-                            // TokenDataEntity tokendataety=TokenDataEntity.fromJson(js);
-
-
-
-                            if(js['status'].toString().compareTo("0") !=0)
-                            {
-
-
-
-                              AppStorage.SaveToken(AppStorage.token, js['token'].toString());
-
-                              Navigator.pushReplacement(context,
-                                  MaterialPageRoute(builder:
-                                      (context) =>
-                                      HomePage()
-                                  )
-                              );
-
-
+                                Navigator.pushReplacement(context,
+                                    MaterialPageRoute(builder:
+                                        (context) =>
+                                        HomePage()
+                                    )
+                                );
+                              }
+                              else {
+                                ResponsiveInfo.showAlertDialog(
+                                    context, "", "Login failed");
+                              }
+                            } else {
+                              print('Failed: ${response.statusCode}');
                             }
-                            else{
-
-                              ResponsiveInfo.showAlertDialog(context, "", "Login failed");
-                            }
-                          } else {
-                            print('Failed: ${response.statusCode}');
                           }
 
 
