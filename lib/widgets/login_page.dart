@@ -128,13 +128,13 @@ class _LoginPageState extends State<LoginPage> {
                                     AppStorage.token, js['token'].toString());
 
                                 AppStorage.setString(AppStorage.id, js['userid'].toString());
-
                                 Navigator.pushReplacement(context,
                                     MaterialPageRoute(builder:
                                         (context) =>
                                         HomePage()
                                     )
                                 );
+
                               }
                               else {
                                 ResponsiveInfo.showAlertDialog(

@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:savekartweb/domain/banner_entity.dart';
 import 'package:savekartweb/domain/category_list_entity.dart';
 import 'package:savekartweb/widgets/SettingsPage.dart';
 import 'package:savekartweb/widgets/cart_screen.dart';
 import 'package:savekartweb/widgets/product_details.dart';
 import 'package:http/http.dart' as http;
+import 'package:savekartweb/widgets/slider_widget.dart';
 import '../design/ResponsiveInfo.dart';
 import '../domain/product_with_category_entity.dart';
 import '../domain/wallet_balance_entity.dart';
@@ -54,11 +56,13 @@ class _HomePageState extends State<HomePage> {
   ];
   List<CategoryListData>? categorylistdata = [];
   List<ProductWithCategoryData>? productbycategorydata = [];
+  List<BannerData> bannerdata = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    getBanners();
     getCategories();
     getWalletPoints();
     getWalletBalanceAndPoints();
@@ -258,7 +262,15 @@ Container(),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTopBar(),
-          _buildBanner(),
+          (bannerdata.length>0)? Slidbar(bannerdata) : Container(
+            width: double.infinity,
+            height: ResponsiveInfo.isMobile(context)?150:200,
+            child: Center(
+
+              child: CircularProgressIndicator(),
+            ),
+
+          ),
 
           ListView.builder(
               itemCount: productbycategorydata?.length,
@@ -430,6 +442,29 @@ Container(),
 
   }
 
+  getBanners()async{
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+
+    var response= await  apihelper.get(Apimethodes.getBanners+"?q="+t.toString());
+
+    var js= jsonDecode(response) ;
+
+    BannerEntity entity=BannerEntity.fromJson(js);
+
+    if(entity.status==1)
+      {
+        setState(() {
+          bannerdata.clear();
+          bannerdata.addAll(entity.data!);
+        });
+      }
+
+
+
+  }
+
   Widget _buildTopBar() {
 
 
@@ -468,30 +503,13 @@ Container(),
     );
   }
 
-  Widget _buildBanner() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        width: (MediaQuery.sizeOf(context).width-260),
-        height: ((MediaQuery.sizeOf(context).width-260)/4),
 
-
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          image: const DecorationImage(
-            image: AssetImage('assets/splash.jpeg'),
-            fit: BoxFit.cover,
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildProductSection(ProductWithCategoryData productWithCategoryData) {
 
 
     List<List<ProductWithCategoryDataData>> chunkedList = [];
-    int chunkSize = (MediaQuery.of(context).size.width>1400)? 6:4;
+    int chunkSize = (MediaQuery.of(context).size.width>1500)? 6:4;
 
     if(productWithCategoryData!.data!.length>chunkSize) {
       for (int i = 0; i < productWithCategoryData!.data!.length; i += chunkSize) {
@@ -502,7 +520,7 @@ Container(),
     }
 
 
-    double screenwidth= (MediaQuery.of(context).size.width>1400)? ((MediaQuery.of(context).size.width/0.95)/ chunkSize) : ((MediaQuery.of(context).size.width/0.5)/chunkSize);
+    double screenwidth= (MediaQuery.of(context).size.width>1500)? ((MediaQuery.of(context).size.width/0.95)/ chunkSize) : (MediaQuery.of(context).size.width<1500&&MediaQuery.of(context).size.width>700)? ((MediaQuery.of(context).size.width/0.7)/chunkSize): ((MediaQuery.of(context).size.width/0.5)/chunkSize);
 
 
     print(chunkedList.length);
@@ -510,7 +528,7 @@ Container(),
 
     return
       SizedBox(
-          height: (chunkedList.length>0)? (chunkedList.length)* screenwidth : screenwidth,
+          height: (chunkedList.length>0)? ((chunkedList.length)* screenwidth)-25 : screenwidth,
         // Set height to show cards properly
           child:Padding(
       padding:  EdgeInsets.all(10.0),
@@ -521,7 +539,7 @@ Container(),
         children: [
           Text(productWithCategoryData!.category!.categoryName!, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
-          SizedBox(height: 10,),
+          SizedBox(height: 6,),
 
 
 
@@ -535,12 +553,19 @@ Container(),
                   crossAxisCount: chunkSize, // 2 on mobile, 3 on larger screens
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
-                  childAspectRatio:MediaQuery.of(context).size.width<1400 ?0.6: 1.1, // Adjust for card shape
+                  childAspectRatio:MediaQuery.of(context).size.width<700 ?0.6 :(MediaQuery.of(context).size.width>700 && MediaQuery.of(context).size.width<1500  )?0.65   : 1.1, // Adjust for card shape
                 ),
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () async {
                       // Handle onTap
+
+                      Navigator.pushReplacement(context,
+                          MaterialPageRoute(builder:
+                              (context) =>
+                                  ProductDetailPage(productWithCategoryData!.data![index])
+                          )
+                      );
                     },
                     child: Card(
                         elevation: ResponsiveInfo.isMobile(context) ? 5 : 8,
@@ -551,15 +576,15 @@ Container(),
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               SizedBox(
-                                height: ResponsiveInfo.isMobile(context) ? 100 : 120,
+                                height: ResponsiveInfo.isMobile(context) ? 90 : 110,
                                 child: Stack(
                                   children: [
                                     Align(
                                       alignment: FractionalOffset.center,
                                       child: Image.network(
                                         ApiHelper.productimageurl + productWithCategoryData!.data![index].primeImage.toString(),
-                                        width: ResponsiveInfo.isMobile(context) ? 100 : 120,
-                                        height: ResponsiveInfo.isMobile(context) ? 100 : 120,
+                                        width: ResponsiveInfo.isMobile(context) ? 90 : 110,
+                                        height: ResponsiveInfo.isMobile(context) ? 90 : 110,
                                         fit: BoxFit.fill,
                                         loadingBuilder: (context, child, loadingProgress) {
                                           if (loadingProgress == null) return child;

@@ -1,22 +1,50 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 import '../design/ResponsiveInfo.dart';
+import '../domain/product_with_category_entity.dart';
+import '../domain/wallet_balance_entity.dart';
+import '../web/AppStorage.dart';
+import '../web/apimethodes.dart';
+import '../web/ecommerce_api_helper.dart';
 import 'SettingsPage.dart';
 import 'cart_screen.dart';
 
 class ProductDetailPage extends StatefulWidget {
+
+
+  ProductWithCategoryDataData productWithCategoryDataData;
+  ProductDetailPage(this.productWithCategoryDataData);
+
   @override
-  _ProductDetailPageState createState() => _ProductDetailPageState();
+  _ProductDetailPageState createState() => _ProductDetailPageState(this.productWithCategoryDataData);
 }
 
 class _ProductDetailPageState extends State<ProductDetailPage> {
+
+  ProductWithCategoryDataData productByCategoryDataData;
+
+
   int selectedImageIndex = 0;
+
+  int walletpoints=0;
+  double walletbalance=0;
+
   String selectedSize = 'XXL';
   String cartcount="2";
   final List<String> imageUrls = List.generate(
     5,
         (index) => 'assets/dettol.jpg',
   );
+  _ProductDetailPageState(this.productByCategoryDataData);
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getProductCount();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,27 +252,15 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
           // Main content
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.only(left: 24.0),
               child: SingleChildScrollView(
 
                 child:   Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header (can be replaced with a custom AppBar)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('SaveKart Wallet : 500.00'),
-                        Row(
-                          children: [
-                            Icon(Icons.sunny, color: Colors.orange),
-                            SizedBox(width: 4),
-                            Text('Wallet Points : 500.00'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 24),
+
+                    SizedBox(height: 12),
 
                     // Product section
                     Row(
@@ -379,4 +395,95 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       ),
     );
   }
+  getProductCount()async{
+    ApiHelper apihelper = new ApiHelper();
+
+    var t = ApiHelper.getTimeStamp();
+
+    var response = await apihelper.get(
+        Apimethodes.getProductCountByName + "?id=" +
+            productByCategoryDataData.id.toString()+"&name="+productByCategoryDataData.productName.toString() + "&q=" + t.toString());
+
+    var js = jsonDecode(response);
+    // ProductCountEntity entity=ProductCountEntity.fromJson(js);
+    //
+    // if(entity.status==1)
+    // {
+    //
+    //   if(entity.data!.length>0)
+    //   {
+    //
+    //     setState(() {
+    //       count=entity.data!.length;
+    //       if(count==1)
+    //       {
+    //         setupProductImages();
+    //         getReturnPolicies(productByCategoryDataData.id.toString());
+    //         getProductStock();
+    //         getCartCount();
+    //       }
+    //       else if(count>1)
+    //       {
+    //         for(int i=0;i<entity.data!.length;i++)
+    //         {
+    //           ProductCountData pb=entity.data![i];
+    //           ProductByCategoryDataData pbc=new ProductByCategoryDataData();
+    //           pbc.id=pb.id;
+    //           pbc.primeImage=pb.primeImage;
+    //           pbc.productName=pb.productName;
+    //           pbc.status=pb.status;
+    //           pbc.productSpec=pb.productSpec;
+    //           pbc.productDescription=pb.productDescription;
+    //           pbc.sideImage4=pb.sideImage4;
+    //           pbc.sideImage3=pb.sideImage3;
+    //           pbc.sideImage2=pb.sideImage2;
+    //           pbc.sideImage1=pb.sideImage1;
+    //           pbc.categoryId=pb.categoryId;
+    //           pbc.color=pb.color;
+    //           pbc.colorEnabled=pb.colorEnabled;
+    //           pbc.size=pb.size;
+    //           pbc.sizeEnabled=pb.sizeEnabled;
+    //           pbc.subCategoryId=pb.subCategoryId;
+    //           pbc.unitId=pb.unitId;
+    //           pbc.vendorId=pb.vendorId;
+    //           pbc.returnDays=pb.returnDays;
+    //           pbc.productCode=pb.productCode;
+    //           pcdata.add(pbc);
+    //         }
+    //
+    //         productByCategoryDataData=pcdata[selectedindex];
+    //         setupProductImages();
+    //         getReturnPolicies(productByCategoryDataData.id.toString());
+    //         getProductStock();
+    //         getCartCount();
+    //
+    //       }
+    //
+    //
+    //     });
+    //
+    //   }
+    //
+    // }
+    // else{
+    //
+    //   setState(() {
+    //
+    //     if(entity.message.toString().contains("values less than one")) {
+    //       count = 1;
+    //       setupProductImages();
+    //       getReturnPolicies(productByCategoryDataData.id.toString());
+    //       getProductStock();
+    //       getCartCount();
+    //     }
+    //   });
+    //
+    //
+    // }
+
+
+
+    print(js);
+  }
+
 }
