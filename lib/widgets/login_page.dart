@@ -118,15 +118,16 @@ class _LoginPageState extends State<LoginPage> {
 
                         print(response);
 
-                          if(response!=null && response.body!=null) {
-                            if (response.statusCode == 200) {
-                              print('Success: ${response.body}');
+                          if(response!=null ) {
+
                               Navigator.pop(context);
-                              var js = jsonDecode(response.body);
+                              var js = jsonDecode(response);
 
                               if (js['status'].toString().compareTo("0") != 0) {
                                 AppStorage.SaveToken(
                                     AppStorage.token, js['token'].toString());
+
+                                AppStorage.setString(AppStorage.id, js['userid'].toString());
 
                                 Navigator.pushReplacement(context,
                                     MaterialPageRoute(builder:
@@ -139,9 +140,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ResponsiveInfo.showAlertDialog(
                                     context, "", "Login failed");
                               }
-                            } else {
-                              print('Failed: ${response.statusCode}');
-                            }
+
                           }
 
 

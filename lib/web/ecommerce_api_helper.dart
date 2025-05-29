@@ -13,12 +13,17 @@ import 'apimethodes.dart';
 String imagePath = 'https://eduklader.com/public/assets/uploads/user-images/';
 
 class ApiHelper  {
-  static String baseUrl = 'https://mysaving.in/IntegraAccount/ecommerce_api/';
+  static const baseUrl = 'https://mysaving.in/IntegraAccount/ecommerce_api_web/';
+
+  static const baseUrldata = 'https://mysaving.in/IntegraAccount/ecommerce_api_web/';
   String sessionTimedOutMessage = 'Server is taking too long to respond';
   String resulturl="https://mysaveapp.com/rechargeAPINew/paymentgateway/result.php";
   String imgbaseurl="https://mysaving.in/uploads/profile/";
 
   static String bannerimageurl="https://mysaving.in/cart/save_cart_sliders/";
+
+
+  static const productimageurl="https://mysaving.in/cart/";
 
   final int timeoutDuration = 40;
 
@@ -34,20 +39,15 @@ class ApiHelper  {
       String url =  baseUrl + endpoint;
 
 
-      String? token= await AppStorage.getString(AppStorage.token) ?? "";
-      Map<String, String> headers = {"Authorization" : token.toString(),
-        "Content-Type": "application/x-www-form-urlencoded"
-      };
+      _logRequest('GET', url, {});
 
-      _logRequest('GET', url, headers);
-
-      http.Response response = await http.get(Uri.parse(url), headers: headers);
+      http.Response response = await http.get(Uri.parse(url));
 
 
 
-      _logResponse('GET', url, headers, response);
+      _logResponse('GET', url, {}, response);
 
-      return response.body;
+      return  _processResponse(response);
 
   }
 
@@ -86,7 +86,8 @@ class ApiHelper  {
         body:  formDataPayload,
       );
 
-return response;
+
+    return  _processResponse(response);
 
   }
 

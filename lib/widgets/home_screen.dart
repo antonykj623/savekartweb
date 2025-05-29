@@ -4,11 +4,14 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:savekartweb/domain/category_list_entity.dart';
 import 'package:savekartweb/widgets/SettingsPage.dart';
 import 'package:savekartweb/widgets/cart_screen.dart';
 import 'package:savekartweb/widgets/product_details.dart';
 import 'package:http/http.dart' as http;
 import '../design/ResponsiveInfo.dart';
+import '../domain/product_with_category_entity.dart';
+import '../domain/wallet_balance_entity.dart';
 import '../web/AppStorage.dart';
 import '../web/apimethodes.dart';
 import '../web/ecommerce_api_helper.dart';
@@ -24,6 +27,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
 
+  int walletpoints=0;
+  double walletbalance=0;
 
   String cartcount="2";
 
@@ -47,13 +52,17 @@ class _HomePageState extends State<HomePage> {
     "Instagram",
 
   ];
-
+  List<CategoryListData>? categorylistdata = [];
+  List<ProductWithCategoryData>? productbycategorydata = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getCategories();
+    getWalletPoints();
+    getWalletBalanceAndPoints();
+    getProductWithSubcategory();
   }
 
 
@@ -61,6 +70,8 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    print(screenWidth);
 
     return Scaffold(
       appBar: AppBar(
@@ -248,10 +259,15 @@ Container(),
         children: [
           _buildTopBar(),
           _buildBanner(),
-          _buildProductSection(),
-          _buildProductSection(),
-          _buildProductSection(),
-          _buildProductSection(),
+
+          ListView.builder(
+              itemCount: productbycategorydata?.length,
+              primary: false,
+              shrinkWrap: true,
+              itemBuilder: (BuildContext context, int index) {
+                return _buildProductSection(productbycategorydata![index]);
+              }),
+
           (screenWidth<700)
               ?  Container(
             height:screenWidth/0.8 ,
@@ -358,63 +374,92 @@ Container(),
   {
     return Container(
       width: 200,
-      color: const Color(0xFFD6EDF3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text('Categories', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          ),
-
-          ListView.builder(
-              itemCount: 5,
-              primary: false,
-              shrinkWrap: true,
-              itemBuilder: (BuildContext context, int index) {
-                return _buildCategory('Ladies Wear', subCategories: ['inner wear', 'Churidar materials']);
-              })
+      color:  Color(0xFFD6EDF3),
 
 
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text('Categories', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+            ),height: 60,)
+             ,
 
-        ],
-      ),
+        Expanded (child:  (categorylistdata!.length>0)?  ListView.builder(
+            itemCount: categorylistdata!.length,
+            primary: false,
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) {
+
+              List<CategoryListDataSubCategory>str=categorylistdata![index].subCategory!;
+
+
+
+              return _buildCategory(categorylistdata![index].category!.categoryName!, subCategories: str);
+            }) : Container(),)
+
+
+
+          ],
+        ),
+
+
+
+
     );
   }
 
-  Widget _buildCategory(String title, {List<String>? subCategories}) {
-    return ExpansionTile(
-      title: Text(title),
-      children: subCategories?.map((sub) => ListTile(title: Text(sub),)).toList() ?? [],
-    );
+  Widget _buildCategory(String title, {List<CategoryListDataSubCategory>? subCategories}) {
+//List<CategoryListDataSubCategory>str=categorylistdata![index].subCategory!;
+
+   return Card(
+     child:ExpansionTile(
+       title: Text(title),
+       backgroundColor: Colors.grey[100], // Background color when expanded
+       collapsedBackgroundColor: Colors.transparent, // Background color when collapsed
+       children: subCategories?.map(
+             (sub) => ListTile(
+           title: Text(sub.subCategoryName!),
+         ),
+       ).toList() ?? [],
+     ) ,
+
+     elevation: 5,
+   ) ;
+
   }
 
   Widget _buildTopBar() {
+
+
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: Colors.white,
       child:           (MediaQuery.of(context).size.width > 700 )? Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child:  Row(children: const [
+          Expanded(child:  Row(children:  [
             Icon(Icons.account_balance_wallet_outlined),
             SizedBox(width: 8),
-            Text('SaveKart Wallet : 500.00')
+            Text('SaveKart Wallet : '+     walletpoints.toString()
+            )
           ]),flex: 1,)
 
          ,
-          Expanded(child:  Row(children: const [
+          Expanded(child:  Row(children:  [
             Icon(Icons.star,color: Colors.yellow,),
             SizedBox(width: 8),
-            Text('Purchase Points : 500.00')
+            Text('Purchase Points : '+walletbalance.toString())
           ]),flex: 1,)
         ],
       ) :  Container(
 
         child: Column(
           children: [
-            Text('SaveKart Wallet : 500.00'),
-            Text('Purchase Points : 500.00')
+            Text('SaveKart Wallet : '+walletbalance.toString()),
+            Text('Purchase Points : '+walletpoints.toString())
           ],
         ),
         height: 70,
@@ -442,111 +487,225 @@ Container(),
     );
   }
 
-  Widget _buildProductSection() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text('Antiseptics', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(
-            height: 200, // Set height to show cards properly
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal, // Horizontal scroll like Row
-              itemCount: 5,
-              padding: EdgeInsets.all(10),
-              shrinkWrap: true,
-              primary: false,
-              itemBuilder: (context, index) {
-                return _buildProductCard(); // You can also pass `index` if needed
-              },
-            ),
-          )
-
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProductCard() {
-    return  Padding(padding: EdgeInsets.all(10),
-
-    child: GestureDetector(
-
-      child: Container(
-        width: 140,
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset(
-              'assets/dettol.jpg',
-              height: 80,
-              width: 100,
-              fit: BoxFit.contain,
-            ),
-            const SizedBox(height: 8),
-            const Text('Dettol 50 ml', style: TextStyle(fontWeight: FontWeight.bold)),
-
-            const SizedBox(height: 15),
-
-          ],
-        ),
-      ),
-      onTap: () async {
-
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProductDetailPage()),
-        );
-
-      },
-    )
+  Widget _buildProductSection(ProductWithCategoryData productWithCategoryData) {
 
 
+    List<List<ProductWithCategoryDataData>> chunkedList = [];
+    int chunkSize = (MediaQuery.of(context).size.width>1400)? 6:4;
 
-
-    )
-
-
-      ;
-  }
-
-
-  getCategories()async
-  {
-    String responseText="";
-    String? token= await AppStorage.getString(AppStorage.token) ?? "";
-    Map<String, String> headersdata = {"Token" : token.toString()
-    };
-    final url = Uri.parse(
-      'https://mysaving.in/IntegraAccount/ecommerce_api/getCategoriesList.php?q=5236', // Use your own endpoint
-    );
-
-    try {
-      final response = await http.get(url,headers: headersdata);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-      } else {
-
+    if(productWithCategoryData!.data!.length>chunkSize) {
+      for (int i = 0; i < productWithCategoryData!.data!.length; i += chunkSize) {
+        int end = (i + chunkSize < productWithCategoryData!.data!.length) ? i + chunkSize : productWithCategoryData!.data!
+            .length;
+        chunkedList.add(productWithCategoryData!.data!.sublist(i, end));
       }
-      print(responseText);
-    } catch (e) {
-      setState(() {
-        responseText = 'Failed to fetch data: $e';
-      });
     }
 
 
+    double screenwidth= (MediaQuery.of(context).size.width>1400)? ((MediaQuery.of(context).size.width/0.95)/ chunkSize) : ((MediaQuery.of(context).size.width/0.5)/chunkSize);
+
+
+    print(chunkedList.length);
+
+
+    return
+      SizedBox(
+          height: (chunkedList.length>0)? (chunkedList.length)* screenwidth : screenwidth,
+        // Set height to show cards properly
+          child:Padding(
+      padding:  EdgeInsets.all(10.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+
+        children: [
+          Text(productWithCategoryData!.category!.categoryName!, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+
+          SizedBox(height: 10,),
+
+
+
+
+          GridView.builder(
+                itemCount: productWithCategoryData!.data!.length,
+
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(), // Disable internal scroll if nested
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: chunkSize, // 2 on mobile, 3 on larger screens
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  childAspectRatio:MediaQuery.of(context).size.width<1400 ?0.6: 1.1, // Adjust for card shape
+                ),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () async {
+                      // Handle onTap
+                    },
+                    child: Card(
+                        elevation: ResponsiveInfo.isMobile(context) ? 5 : 8,
+                        color: Colors.white,
+                        child: Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: ResponsiveInfo.isMobile(context) ? 100 : 120,
+                                child: Stack(
+                                  children: [
+                                    Align(
+                                      alignment: FractionalOffset.center,
+                                      child: Image.network(
+                                        ApiHelper.productimageurl + productWithCategoryData!.data![index].primeImage.toString(),
+                                        width: ResponsiveInfo.isMobile(context) ? 100 : 120,
+                                        height: ResponsiveInfo.isMobile(context) ? 100 : 120,
+                                        fit: BoxFit.fill,
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) return child;
+                                          return Center(child: CircularProgressIndicator());
+                                        },
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Icon(Icons.image, size: 50, color: Colors.black26);
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Text(
+                                productWithCategoryData.data![index].productName.toString(),
+                                maxLines: 2,
+                                style: TextStyle(
+                                  fontSize: ResponsiveInfo.isMobile(context) ? 13 : 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                  );
+                },
+              )
+
+
+
+
+
+
+
+        ],
+      ),
+    ) );
   }
+
+
+
+  getProductWithSubcategory()async {
+
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+
+    var response= await  apihelper.get(Apimethodes.getProductWithCategories+"?q="+t.toString());
+    print(response);
+
+    var js= jsonDecode(response) ;
+
+    ProductWithCategoryEntity brandEntity=ProductWithCategoryEntity.fromJson(js);
+
+    if(brandEntity.data!.length>0)
+    {
+      setState(() {
+        productbycategorydata!.clear();
+        productbycategorydata!.addAll(brandEntity.data!);
+
+      });
+    }
+  }
+
+  getCategories()async
+  {
+    ApiHelper apihelper = new ApiHelper();
+
+    String? userid=await AppStorage.getString(AppStorage.id);
+
+    var response = await
+    apihelper.get(
+        Apimethodes.getCategoriesList + "?q=" + ApiHelper.getTimeStamp()+"&userid=");
+
+    var js = jsonDecode(response);
+    CategoryListEntity categoryListEntity = CategoryListEntity.fromJson(js);
+
+    if (categoryListEntity.status == 1)
+  {
+    setState(() {
+      categorylistdata!.addAll(categoryListEntity.data!);
+    });
+
+  }
+
+
+
+
+  }
+
+
+  getWalletBalanceAndPoints()
+  async {
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+    String? userid=await AppStorage.getString(AppStorage.id);
+
+    var response= await  apihelper.get(Apimethodes.calculateWalletBallence+"?q="+t.toString()+"&userid="+userid.toString());
+
+    var js= jsonDecode( response) ;
+    print(js);
+
+    WalletBalanceEntity entity=WalletBalanceEntity.fromJson(js);
+
+    if(entity!=null)
+    {
+
+      setState(() {
+
+        walletbalance=double.parse(entity.data!.balance.toString());
+      });
+
+
+    }
+
+
+
+  }
+
+  getWalletPoints()
+  async {
+    ApiHelper apihelper = new ApiHelper();
+    String? userid=await AppStorage.getString(AppStorage.id);
+    var t=ApiHelper.getTimeStamp();
+    var response1= await  apihelper.get(Apimethodes.getWalletPoints+"?q="+t.toString()+"&userid="+userid.toString());
+    var js1= jsonDecode( response1) ;
+    setState(()  {
+      walletpoints=int.parse(js1['data'].toString());
+
+      AppStorage.setString(AppStorage.walletpoint, walletpoints.toString());
+      // String? currentWalletPoints=await AppStorage.getString(AppStorage.current_wallet_point);
+
+
+      AppStorage.setString(
+          AppStorage.current_wallet_point, walletpoints.toString());
+
+    });
+
+
+
+  }
+
+
 }
