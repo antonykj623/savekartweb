@@ -581,19 +581,37 @@ Container(),
                                   children: [
                                     Align(
                                       alignment: FractionalOffset.center,
-                                      child: Image.network(
-                                        ApiHelper.productimageurl + productWithCategoryData!.data![index].primeImage.toString(),
-                                        width: ResponsiveInfo.isMobile(context) ? 90 : 110,
-                                        height: ResponsiveInfo.isMobile(context) ? 90 : 110,
-                                        fit: BoxFit.fill,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) return child;
-                                          return Center(child: CircularProgressIndicator());
+                                      child:GestureDetector(
+
+                                        onTap: (){
+
+                                          Navigator.pushReplacement(context,
+                                              MaterialPageRoute(builder:
+                                                  (context) =>
+                                                  ProductDetailPage(productWithCategoryData!.data![index])
+                                              )
+                                          );
+
                                         },
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Icon(Icons.image, size: 50, color: Colors.black26);
-                                        },
-                                      ),
+
+                                        child: Image.network(
+                                          ApiHelper.productimageurl + productWithCategoryData!.data![index].primeImage.toString(),
+                                          width: ResponsiveInfo.isMobile(context) ? 90 : 110,
+                                          height: ResponsiveInfo.isMobile(context) ? 90 : 110,
+                                          fit: BoxFit.fill,
+                                          loadingBuilder: (context, child, loadingProgress) {
+                                            if (loadingProgress == null) return child;
+                                            return Center(child: CircularProgressIndicator());
+                                          },
+                                          errorBuilder: (context, error, stackTrace) {
+                                            return Icon(Icons.image, size: 50, color: Colors.black26);
+                                          },
+                                        ),
+                                      )
+
+
+
+
                                     ),
                                   ],
                                 ),

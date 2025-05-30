@@ -408,15 +408,6 @@ class ApiHelper  {
       msg += '\n=======REQUEST-$method=========BEGIN========================\n';
       msg += '[URL] :$url\n';
       msg += '[HEADERS] :${json.encode(headers)}\n';
-      if (jsonPayload != null) {
-        msg += '[JSON_PAYLOAD] :${json.encode(jsonPayload)}\n';
-      }
-      if ((formDataPayload ?? {}).isNotEmpty) {
-        msg += '[FORM_DATA_PAYLOAD] :${json.encode(formDataPayload)}\n';
-      }
-      if (formDataFiles.isNotEmpty) {
-        msg += '[FORM_DATA_FILES] :${json.encode(formDataFiles)}\n';
-      }
       msg += '=======REQUEST-$method=========END==========================\n';
 
       log(msg);
