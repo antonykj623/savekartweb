@@ -67,9 +67,32 @@ class _HomePageState extends State<HomePage> {
     getWalletPoints();
     getWalletBalanceAndPoints();
     getProductWithSubcategory();
+    getCartCount();
   }
 
+  getCartCount()async {
+    // ResponsiveInfo.ShowProgressDialog(context);
+    ApiHelper apihelper = new ApiHelper();
+    String? userid=await AppStorage.getString(AppStorage.id);
+    var t=ApiHelper.getTimeStamp();
 
+    var response= await  apihelper.get(Apimethodes.getCartDataCount+"?q="+t.toString()+"&userid="+userid.toString());
+
+    var js= jsonDecode( response) ;
+
+    if(js['status']==1)
+    {
+
+      String c=js['data'].toString();
+
+      setState(() {
+        cartcount=c;
+
+      });
+
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -560,7 +583,7 @@ Container(),
                     onTap: () async {
                       // Handle onTap
 
-                      Navigator.pushReplacement(context,
+                      Navigator.push(context,
                           MaterialPageRoute(builder:
                               (context) =>
                                   ProductDetailPage(productWithCategoryData!.data![index])
@@ -585,7 +608,7 @@ Container(),
 
                                         onTap: (){
 
-                                          Navigator.pushReplacement(context,
+                                          Navigator.push(context,
                                               MaterialPageRoute(builder:
                                                   (context) =>
                                                   ProductDetailPage(productWithCategoryData!.data![index])

@@ -63,6 +63,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
  bool iswishlist=false;
  int AdsCurrentIndex=0;
 
+ double tempwalletpoints=0;
+
 
   _ProductDetailPageState(this.productByCategoryDataData);
 
@@ -444,7 +446,79 @@ leading:GestureDetector(
     backgroundColor: Colors.teal,
     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
     ),
-    onPressed: () {},
+    onPressed: () async {
+
+
+      double current_walletpoints = await calculateWalletPoints();
+      double ppredemption = 0;
+
+
+      if (current_walletpoints != null) {
+
+        if (productStockEntity != null) {
+          if (productStockEntity.data!.ppRedemption !=
+              null) {
+            ppredemption = double.parse(
+                productStockEntity.data!.ppRedemption
+                    .toString());
+
+            if (current_walletpoints > ppredemption) {
+              Widget okButton = TextButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  tempwalletpoints =
+                      current_walletpoints - ppredemption;
+                  // AppStorage.setString(AppStorage.current_wallet_point, tempwalletpoints.toString());
+                  ispointredeemeed = true;
+                  getProductExistsinCart();
+
+                  Navigator.pop(context);
+                },
+              );
+
+              Widget noButton = TextButton(
+                child: Text("No"),
+                onPressed: () {
+                  ispointredeemeed = false;
+                  getProductExistsinCart();
+
+                  Navigator.pop(context);
+                },
+              );
+
+              // set up the AlertDialog
+              AlertDialog alert = AlertDialog(
+                title: Text("Savekart"),
+                content: Text("Your wallet point is " +
+                    current_walletpoints.toString() +
+                    ".So you are eligible to redeem points.Do you want to redeem now ?"),
+                actions: [
+                  okButton,
+                  noButton
+                ],
+              );
+
+              // show the dialog
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return alert;
+                },
+              );
+            }
+            else {
+              getProductExistsinCart();
+            }
+          }
+        }
+      }
+      else {
+        getProductExistsinCart();
+      }
+
+
+
+    },
     child: Text('Add to Cart'),
     ),
     ],
@@ -957,9 +1031,10 @@ leading:GestureDetector(
   Future<double> calculateWalletPoints() async {
     ResponsiveInfo.showLoaderDialog(context);
     double walletpoints = 0;
+    String? userid=await AppStorage.getString(AppStorage.id);
     ApiHelper apihelper = new ApiHelper();
     var t=ApiHelper.getTimeStamp();
-    var response1= await  apihelper.get(Apimethodes.getWalletPoints+"?q="+t.toString());
+    var response1= await  apihelper.get(Apimethodes.getWalletPoints+"?q="+t.toString()+"&userid="+userid.toString());
 
     Navigator.pop(context);
     var js1= jsonDecode( response1) ;
@@ -972,7 +1047,7 @@ leading:GestureDetector(
 
     ResponsiveInfo.ShowProgressDialog(context);
 
-
+    String? userid=await AppStorage.getString(AppStorage.id);
     ApiHelper apihelper = new ApiHelper();
 
     var t=ApiHelper.getTimeStamp();
@@ -981,6 +1056,7 @@ leading:GestureDetector(
     mp['product_id']=productByCategoryDataData.id.toString();
     mp['quantity']="1";
     mp['stockid']=product_stockid;
+    mp['userid']=userid.toString();
     if(ispointredeemeed)
     {
       mp['points_redeemed']="1";
@@ -1042,11 +1118,13 @@ leading:GestureDetector(
     ResponsiveInfo.ShowProgressDialog(context);
 
     ApiHelper apihelper = new ApiHelper();
+    String? userid=await AppStorage.getString(AppStorage.id);
 
     var t=ApiHelper.getTimeStamp();
     Map<String,String>mp=new HashMap();
     mp['product_id']=productStockEntity.data!.productId.toString();
     mp['stock_id']=productStockEntity.data!.id.toString();
+    mp['userid']=userid.toString();
 
     var response= await  apihelper.post(Apimethodes.addProductToWishlist+"?q="+t.toString(),formDataPayload: mp);
 
@@ -1077,10 +1155,11 @@ leading:GestureDetector(
     ResponsiveInfo.ShowProgressDialog(context);
 
     ApiHelper apihelper = new ApiHelper();
-
+    String? userid=await AppStorage.getString(AppStorage.id);
     var t=ApiHelper.getTimeStamp();
     Map<String,String>mp=new HashMap();
     mp['id']=wishlist_id;
+    mp['userid']=userid.toString();
 
 
     var response= await  apihelper.post(Apimethodes.deleteFromWishlist+"?q="+t.toString(),formDataPayload: mp);

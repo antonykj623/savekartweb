@@ -73,7 +73,7 @@ class ApiHelper  {
       serverurl = baseUrl + endpoint;
       headers= {
         "Content-Type": "application/x-www-form-urlencoded",
-    "Authorization" : token.toString()
+
 
   };
     }
