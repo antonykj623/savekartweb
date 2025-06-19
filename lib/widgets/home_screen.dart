@@ -501,7 +501,7 @@ Container(),
           Expanded(child:  Row(children:  [
             Icon(Icons.account_balance_wallet_outlined),
             SizedBox(width: 8),
-            Text('SaveKart Wallet : '+     walletpoints.toString()
+            Text('Purchase Points : '+     walletpoints.toString()
             )
           ]),flex: 1,)
 
@@ -509,7 +509,7 @@ Container(),
           Expanded(child:  Row(children:  [
             Icon(Icons.star,color: Colors.yellow,),
             SizedBox(width: 8),
-            Text('Purchase Points : '+walletbalance.toString())
+            Text('Savekart Wallet : '+walletbalance.toString())
           ]),flex: 1,)
         ],
       ) :  Container(
@@ -576,7 +576,7 @@ Container(),
                   crossAxisCount: chunkSize, // 2 on mobile, 3 on larger screens
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
-                  childAspectRatio:MediaQuery.of(context).size.width<700 ?0.6 :(MediaQuery.of(context).size.width>700 && MediaQuery.of(context).size.width<1500  )?0.65   : 1.1, // Adjust for card shape
+                  childAspectRatio:MediaQuery.of(context).size.width<=690 ?0.6 :(MediaQuery.of(context).size.width>690 && MediaQuery.of(context).size.width<1500  )?0.65   : 1.1, // Adjust for card shape
                 ),
                 itemBuilder: (context, index) {
                   return GestureDetector(
@@ -642,7 +642,7 @@ Container(),
                               SizedBox(height: 10),
                               Text(
                                 productWithCategoryData.data![index].productName.toString(),
-                                maxLines: 2,
+                                maxLines: 2 ,
                                 style: TextStyle(
                                   fontSize: ResponsiveInfo.isMobile(context) ? 13 : 15,
                                   fontWeight: FontWeight.bold,

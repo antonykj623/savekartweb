@@ -13,6 +13,8 @@ import 'apimethodes.dart';
 String imagePath = 'https://eduklader.com/public/assets/uploads/user-images/';
 
 class ApiHelper  {
+
+static double totalamount=0;
   static const baseUrl = 'https://mysaving.in/IntegraAccount/ecommerce_api_web/';
 
   static const baseUrldata = 'https://mysaving.in/IntegraAccount/ecommerce_api_web/';

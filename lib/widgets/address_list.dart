@@ -187,7 +187,7 @@ class _AddressListState extends State<AddressList> {
 
         children: [
 
-          Align(
+          (_addresses.length>0)? Align(
             alignment: FractionalOffset.topCenter,
 
             child: ListView.builder(
@@ -316,6 +316,9 @@ class _AddressListState extends State<AddressList> {
                     
                     ;
                 }),
+          ) : Align(
+            alignment: FractionalOffset.center,
+            child: Text("No Data Found"),
           )
         ],
       ),

@@ -95,7 +95,7 @@ class _SlidbarrState extends State<Slidbar> {
           print("Slider url : "+ApiHelper.bannerimageurl+ cbd.imageFile.toString());
 
           w.add(Image.network(ApiHelper.bannerimageurl+ cbd.imageFile.toString()+"?q="+t,width: screenWidth,
-              height: screenWidth/2, loadingBuilder: (context, child, loadingProgress) {
+              height: screenWidth/3, loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress == null) return child; // Image loaded successfully
                 return Center(child: CircularProgressIndicator()); // Show loader while loading
               },

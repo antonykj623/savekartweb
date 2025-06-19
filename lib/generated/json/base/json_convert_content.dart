@@ -9,9 +9,11 @@ import 'package:savekartweb/domain/cart_data_entity.dart';
 import 'package:savekartweb/domain/cart_data_exist_entity.dart';
 import 'package:savekartweb/domain/category_list_entity.dart';
 import 'package:savekartweb/domain/check_wish_list_entity.dart';
+import 'package:savekartweb/domain/order_entity.dart';
 import 'package:savekartweb/domain/product_count_entity.dart';
 import 'package:savekartweb/domain/product_stock_entity.dart';
 import 'package:savekartweb/domain/product_with_category_entity.dart';
+import 'package:savekartweb/domain/profile_data_entity.dart';
 import 'package:savekartweb/domain/return_policy_entity.dart';
 import 'package:savekartweb/domain/user_address_entity.dart';
 import 'package:savekartweb/domain/wallet_balance_entity.dart';
@@ -195,6 +197,34 @@ class JsonConvert {
       return data.map<CheckWishListData>((Map<String, dynamic> e) =>
           CheckWishListData.fromJson(e)).toList() as M;
     }
+    if (<OrderEntity>[] is M) {
+      return data.map<OrderEntity>((Map<String, dynamic> e) =>
+          OrderEntity.fromJson(e)).toList() as M;
+    }
+    if (<OrderData>[] is M) {
+      return data.map<OrderData>((Map<String, dynamic> e) =>
+          OrderData.fromJson(e)).toList() as M;
+    }
+    if (<OrderDataCartOrder>[] is M) {
+      return data.map<OrderDataCartOrder>((Map<String, dynamic> e) =>
+          OrderDataCartOrder.fromJson(e)).toList() as M;
+    }
+    if (<OrderDataCartStock>[] is M) {
+      return data.map<OrderDataCartStock>((Map<String, dynamic> e) =>
+          OrderDataCartStock.fromJson(e)).toList() as M;
+    }
+    if (<OrderDataCartProduct>[] is M) {
+      return data.map<OrderDataCartProduct>((Map<String, dynamic> e) =>
+          OrderDataCartProduct.fromJson(e)).toList() as M;
+    }
+    if (<OrderDataCartReturnRequests>[] is M) {
+      return data.map<OrderDataCartReturnRequests>((Map<String, dynamic> e) =>
+          OrderDataCartReturnRequests.fromJson(e)).toList() as M;
+    }
+    if (<OrderDataPaymentDetails>[] is M) {
+      return data.map<OrderDataPaymentDetails>((Map<String, dynamic> e) =>
+          OrderDataPaymentDetails.fromJson(e)).toList() as M;
+    }
     if (<ProductCountEntity>[] is M) {
       return data.map<ProductCountEntity>((Map<String, dynamic> e) =>
           ProductCountEntity.fromJson(e)).toList() as M;
@@ -227,6 +257,14 @@ class JsonConvert {
     if (<ProductWithCategoryDataData>[] is M) {
       return data.map<ProductWithCategoryDataData>((Map<String, dynamic> e) =>
           ProductWithCategoryDataData.fromJson(e)).toList() as M;
+    }
+    if (<ProfileDataEntity>[] is M) {
+      return data.map<ProfileDataEntity>((Map<String, dynamic> e) =>
+          ProfileDataEntity.fromJson(e)).toList() as M;
+    }
+    if (<ProfileDataData>[] is M) {
+      return data.map<ProfileDataData>((Map<String, dynamic> e) =>
+          ProfileDataData.fromJson(e)).toList() as M;
     }
     if (<ReturnPolicyEntity>[] is M) {
       return data.map<ReturnPolicyEntity>((Map<String, dynamic> e) =>
@@ -286,6 +324,14 @@ class JsonConvertClassCollection {
         .fromJson,
     (CheckWishListEntity).toString(): CheckWishListEntity.fromJson,
     (CheckWishListData).toString(): CheckWishListData.fromJson,
+    (OrderEntity).toString(): OrderEntity.fromJson,
+    (OrderData).toString(): OrderData.fromJson,
+    (OrderDataCartOrder).toString(): OrderDataCartOrder.fromJson,
+    (OrderDataCartStock).toString(): OrderDataCartStock.fromJson,
+    (OrderDataCartProduct).toString(): OrderDataCartProduct.fromJson,
+    (OrderDataCartReturnRequests).toString(): OrderDataCartReturnRequests
+        .fromJson,
+    (OrderDataPaymentDetails).toString(): OrderDataPaymentDetails.fromJson,
     (ProductCountEntity).toString(): ProductCountEntity.fromJson,
     (ProductCountData).toString(): ProductCountData.fromJson,
     (ProductStockEntity).toString(): ProductStockEntity.fromJson,
@@ -296,6 +342,8 @@ class JsonConvertClassCollection {
         .toString(): ProductWithCategoryDataCategory.fromJson,
     (ProductWithCategoryDataData).toString(): ProductWithCategoryDataData
         .fromJson,
+    (ProfileDataEntity).toString(): ProfileDataEntity.fromJson,
+    (ProfileDataData).toString(): ProfileDataData.fromJson,
     (ReturnPolicyEntity).toString(): ReturnPolicyEntity.fromJson,
     (ReturnPolicyData).toString(): ReturnPolicyData.fromJson,
     (UserAddressEntity).toString(): UserAddressEntity.fromJson,

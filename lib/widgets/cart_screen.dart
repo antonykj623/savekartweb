@@ -7,6 +7,8 @@ import 'package:hexcolor/hexcolor.dart';
 import '../color/ColorsData.dart';
 import '../design/ResponsiveInfo.dart';
 import '../domain/cart_data_entity.dart';
+import '../domain/user_address_entity.dart';
+import '../domain/wallet_balance_entity.dart';
 import '../web/AppStorage.dart';
 import '../web/apimethodes.dart';
 import '../web/ecommerce_api_helper.dart';
@@ -25,17 +27,25 @@ class _CartPageState extends State<CartPage> {
   final int itemPrice = 120;
 
   double fulltotal=0;
+  int walletpoints=0;
   // List<int> quantities = List.generate(4, (index) => 2);
   //
   // int get totalAmount => quantities.fold(0, (sum, qty) => sum + qty * itemPrice);
 
   List<CartDataData>cartdata=[];
+  List<UserAddressData> _addresses = [];
+
+  String selected="0",selected_addressid="",_selectedAddress="";
+
+  double walletbalance=0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
+getWalletPoints();
+getWalletBalanceAndPoints();
+    getAllAddress();
     getCartItems();
   }
 
@@ -69,15 +79,84 @@ class _CartPageState extends State<CartPage> {
               children: [
                  Text('Delivery Address', style: TextStyle(fontWeight: FontWeight.bold)),
                  SizedBox(height: 8),
-                 Text(
-                  'Address: G6P8+HGC, Cosmopolitan Road,\nAswini Junction, Cherumukku,\nThrissur, Kerala 680008',
+                (_addresses.length>0)?  Padding(padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
+
+                  child:  Text(_selectedAddress.toString(),style: TextStyle(color: Colors.black),),
+
+                ) :
+                Container(width: double.infinity,
+                    color: Colors.white54,
+
+                    height: 200,
+                    child:Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+
+                        Align(
+
+                          alignment: FractionalOffset.center,
+                          child: Text('No Delivery Address Found', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                        ),
+
+                        TextButton(onPressed: () async {
+
+
+                          final result = await  showDialog(
+                            context: context,
+                            barrierDismissible: true, // Tap outside to dismiss
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 16,
+                                  child: SizedBox(
+                                      width: MediaQuery.of(context).size.width/2.5,  // Set your desired width
+                                      height: double.infinity, // Set your desired height
+                                      child: AddressList() )
+                              );
+                            },
+                          );
+
+
+                          if (result != null) {
+                            String   added = result['added'] ?? '';
+                            String id=result['id']??'';
+                            if(added.compareTo("1")==0)
+                            {
+                              print("Selected address${id}");
+                              setState(() {
+                                selected=id;
+                                selected_addressid=id;
+                              });
+
+                              getAllAddress();
+
+
+
+                            }
+
+
+                          }
+
+                        }, child: Text('Click here to create new', style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal)))
+
+
+                      ],
+                    )
+
+
+
+
+
                 ),
                  SizedBox(height: 10),
-                ElevatedButton(onPressed: () {
+                (_addresses.length>0)?   ElevatedButton(onPressed: () async {
 
 
 
-                    showDialog(
+                  final result = await  showDialog(
                       context: context,
                       barrierDismissible: true, // Tap outside to dismiss
                       builder: (BuildContext context) {
@@ -95,9 +174,27 @@ class _CartPageState extends State<CartPage> {
                     );
 
 
+                  if (result != null) {
+                    String   added = result['added'] ?? '';
+                    String id=result['id']??'';
+                    if(added.compareTo("1")==0)
+                    {
+                      print("Selected address${id}");
+                      setState(() {
+                        selected=id;
+                        selected_addressid=id;
+                      });
+
+                      getAllAddress();
 
 
-                }, child:  Text('Change')),
+
+                    }
+
+
+                  }
+
+                }, child:  Text('Change')) : Container(),
                  SizedBox(height: 20),
                  Text('Wallet', style: TextStyle(fontWeight: FontWeight.bold)),
                  SizedBox(height: 10),
@@ -140,7 +237,7 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           Icon(Icons.wallet,color: HexColor(ColrsData.maincolor),),
                           SizedBox(width: 4),
-                          Text('SaveKart Wallet : 500.00'),
+                          Text('SaveKart Wallet : '+walletbalance.toString()),
                         ],
                       ),
 
@@ -150,7 +247,7 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           Icon(Icons.star,color: Colors.yellow,),
                           SizedBox(width: 4),
-                          Text('Wallet Points : 500.00'),
+                          Text('Wallet Points : '+walletpoints.toString()),
 
                         ],
                       )
@@ -165,7 +262,7 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           Icon(Icons.wallet,color: HexColor(ColrsData.maincolor),),
                           SizedBox(width: 4),
-                          Text('SaveKart Wallet : 500.00'),
+                          Text('SaveKart Wallet : '+walletbalance.toString()),
                         ],
                       ),
 
@@ -175,7 +272,7 @@ class _CartPageState extends State<CartPage> {
                         children: [
                           Icon(Icons.star,color: Colors.yellow,),
                           SizedBox(width: 4),
-                          Text('Wallet Points : 500.00'),
+                          Text('Wallet Points : '+walletpoints.toString()),
 
                         ],
                       )
@@ -361,6 +458,139 @@ class _CartPageState extends State<CartPage> {
       ),
     );
   }
+
+
+
+  getWalletBalanceAndPoints()
+  async {
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+    String? userid=await AppStorage.getString(AppStorage.id);
+
+    var response= await  apihelper.get(Apimethodes.calculateWalletBallence+"?q="+t.toString()+"&userid="+userid.toString());
+
+    var js= jsonDecode( response) ;
+    print(js);
+
+    WalletBalanceEntity entity=WalletBalanceEntity.fromJson(js);
+
+    if(entity!=null)
+    {
+
+      setState(() {
+
+        walletbalance=double.parse(entity.data!.balance.toString());
+      });
+
+
+    }
+
+
+
+  }
+
+  getWalletPoints()
+  async {
+    ApiHelper apihelper = new ApiHelper();
+    String? userid=await AppStorage.getString(AppStorage.id);
+    var t=ApiHelper.getTimeStamp();
+    var response1= await  apihelper.get(Apimethodes.getWalletPoints+"?q="+t.toString()+"&userid="+userid.toString());
+    var js1= jsonDecode( response1) ;
+    setState(()  {
+      walletpoints=int.parse(js1['data'].toString());
+
+      AppStorage.setString(AppStorage.walletpoint, walletpoints.toString());
+      // String? currentWalletPoints=await AppStorage.getString(AppStorage.current_wallet_point);
+
+
+      AppStorage.setString(
+          AppStorage.current_wallet_point, walletpoints.toString());
+
+    });
+
+
+
+  }
+
+
+
+  getAllAddress()async
+  {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      ResponsiveInfo.showLoaderDialog(context);
+
+
+    });
+
+
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+    String? userid=await AppStorage.getString(AppStorage.id);
+    var response= await  apihelper.get(Apimethodes.getAddressList+"?q="+t.toString()+"&userid="+userid.toString());
+
+    var js= jsonDecode( response) ;
+
+    UserAddressEntity entity=UserAddressEntity.fromJson(js);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      Navigator.pop(context);
+
+
+    });
+    if(entity.status==1)
+    {
+
+      setState(() {
+
+        _addresses.clear();
+        if(entity.data!.length>0) {
+          _addresses.addAll(entity.data!);
+
+          if(selected.toString().compareTo("0")==0) {
+            selected_addressid = _addresses[0].id.toString();
+            _selectedAddress = _addresses[0].name.toString() + "," +
+                _addresses[0].housename.toString() + "\n" +
+                _addresses[0].landmark.toString()+","+
+                _addresses[0].district.toString()+"\n"+
+                "Phone : "+ _addresses[0].phone.toString()+",\nPin code : "+_addresses[0].pincode.toString();
+          }
+          else{
+            for(int i=0;i<_addresses.length;i++)
+            {
+
+              if(_addresses[i].id.toString().compareTo(selected.toString())==0)
+              {
+
+                setState(() {
+                  selected_addressid = _addresses[i].id.toString();
+                  _selectedAddress = _addresses[i].name.toString() + "," +
+                      _addresses[i].housename.toString() + "\n" +
+                      _addresses[i].landmark.toString()+","+
+                      _addresses[i].district.toString()+"\n"+
+                      "Phone : "+_addresses[i].phone.toString()+",\nPin Code : "+_addresses[0].pincode.toString();
+
+                });
+
+              }
+
+
+            }
+
+
+          }
+        }
+      });
+    }
+
+
+
+  }
+
+
 
   deleteFromCart(String id,int index)async
   {

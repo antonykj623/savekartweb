@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../domain/profile_data_entity.dart';
+
 class ProfilePage extends StatelessWidget {
-   ProfilePage() ;
+  ProfileDataData profileDataData;
+   ProfilePage(this.profileDataData) ;
 
   @override
   Widget build(BuildContext context) {
     final isWide = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text('My Profile'),
-        backgroundColor: Colors.blueGrey,
-      ),
+
       body: Center(
         child: Container(
           padding: EdgeInsets.all(24),
@@ -44,9 +44,18 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfilePicture() {
-    return CircleAvatar(
+    return (profileDataData.profileImage.toString().isEmpty)? CircleAvatar(
       radius: 80,
-      backgroundImage: NetworkImage('https://i.pravatar.cc/300'),
+      backgroundImage: NetworkImage(profileDataData.profileImage.toString()),
+    ) :   GestureDetector(
+      onTap: (){
+
+
+      }, // Allow image change on tap
+      child: CircleAvatar(
+          radius: 50,
+          backgroundImage:  AssetImage('assets/icons.png')
+      ),
     );
   }
 
@@ -55,11 +64,11 @@ class ProfilePage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'John Doe',
+          profileDataData.fullName.toString(),
           style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
         ),
         Text(
-          'Flutter Developer',
+          'User Name : '+ (profileDataData.username.toString().isEmpty?"No Data"  :  profileDataData.username.toString()),
           style: TextStyle(fontSize: 18, color: Colors.grey[700]),
         ),
         SizedBox(height: 20),
@@ -67,7 +76,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             Icon(Icons.email, color: Colors.grey),
             SizedBox(width: 8),
-            Text('john.doe@example.com'),
+            Text( (profileDataData.emailId.toString().isEmpty?"No Data"  :  profileDataData.emailId.toString())),
           ],
         ),
         SizedBox(height: 8),
@@ -75,19 +84,13 @@ class ProfilePage extends StatelessWidget {
           children: [
             Icon(Icons.phone, color: Colors.grey),
             SizedBox(width: 8),
-            Text('+91 98765 43210'),
+            Text((profileDataData.mobile.toString().isEmpty?"No Data"  :  profileDataData.mobile.toString())),
           ],
         ),
         SizedBox(height: 20),
-        Text(
-          'About Me',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-        ),
+
         SizedBox(height: 10),
-        Text(
-          'Experienced Flutter developer with a passion for building beautiful and functional apps. Loves exploring new tech and solving real-world problems through code.',
-          style: TextStyle(fontSize: 16),
-        ),
+
       ],
     );
   }
