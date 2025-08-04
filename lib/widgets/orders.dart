@@ -2,6 +2,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 // import 'package:savekart/domain/order_entity.dart';
@@ -42,6 +43,7 @@ class _OrdersState extends State<Orders> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.of(context).size.width > 800;
     return Scaffold(
 
 
@@ -54,8 +56,8 @@ class _OrdersState extends State<Orders> {
 
             Align(
               alignment: FractionalOffset.topCenter,
-              child: (data!.length>0)? Padding(padding: EdgeInsets.all(ResponsiveInfo.isMobile(context)?5:10),
-                child: ListView.builder(
+              child: (data!.length>0 )? Padding(padding: EdgeInsets.all(ResponsiveInfo.isMobile(context)?5:10),
+                child:(isWide)? ListView.builder(
                   itemCount: data!.length,
                   itemBuilder: (context, index) {
                     final item = data![index];
@@ -109,12 +111,12 @@ class _OrdersState extends State<Orders> {
                                 trailing: IconButton(
                                   icon: Icon(Icons.arrow_forward_ios_sharp, color: Colors.black26),
                                   onPressed: () {
-                                    // Navigator.push(
-                                    //   context,
-                                    //   MaterialPageRoute(
-                                    //     builder: (context) => OrderItemDetailsScreen(item),
-                                    //   ),
-                                    // );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => OrderItemDetailsScreen(item),
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
@@ -207,10 +209,160 @@ class _OrdersState extends State<Orders> {
                       ),
                     );
                   },
-                ),
+                ) :
+
+                GridView.builder(
+                  itemCount: data!.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // 2 columns
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 5,
+                    childAspectRatio: (MediaQuery.of(context).size.width < 800)? 0.5:0.65, // width/height ratio
+                  ),
+                  itemBuilder: (context, index) {
+
+                    final item = data![index];
+                    final order = item.cartOrder!;
+                    final product = item.cartProduct!;
+                    final returnRequest = item.cartReturnRequests!;
+                    final paymentDetails=item.paymentDetails!;
 
 
-              ) : Padding(padding: EdgeInsets.only(top:MediaQuery.of(context).size.height/2.2),
+
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderItemDetailsScreen(item),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        margin: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        elevation: 3,
+                        child: Container(
+                          width: double.infinity,
+                          // height:  item.cartOrder!.orderItemStatus.toString().compareTo("5")==0 ?150: item.cartOrder!.orderItemStatus.toString().compareTo("0")==0? 180:230 ,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+
+                              ...[
+
+                                Image.network(
+                                  ApiHelper.productimageurl + product.primeImage.toString(),
+                                  width: ResponsiveInfo.isMobile(context) ? 60 : 75,
+                                  height: ResponsiveInfo.isMobile(context) ? 60 : 75,
+                                  fit: BoxFit.cover,
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Center(child: CircularProgressIndicator());
+                                  },
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(Icons.image, size: 50, color: Colors.black26);
+                                  },
+                                ),
+                                Text(
+                                  product.productName.toString(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  "Price : ${order.price} Rs",
+                                  style: TextStyle(color: Colors.black),
+                                ),
+                                if (paymentDetails.paymentStatus.toString().compareTo("1")!=0)
+                                  _buildStatusText("Payment failed", Colors.red)
+                                else ...[
+                                  if (order.orderItemStatus.toString().compareTo("0") == 0)
+                                    _buildStatusText("Order created.", Colors.green),
+                                  if (order.orderItemStatus.toString().compareTo("1")==0)
+                                    _buildStatusText("Packing is in progress..", Colors.green),
+                                  if (order.orderItemStatus.toString().compareTo("2")==0)
+                                    _buildStatusText("Out for delivery", Colors.green),
+                                  if (order.orderItemStatus.toString().compareTo("3")==0)
+                                    _buildStatusText("Order delivered successfully", Colors.green),
+                                  if (order.orderItemStatus.toString().compareTo("4")==0)
+                                    _buildStatusText("You returned this product", Colors.redAccent),
+                                  if (order.orderItemStatus.toString().compareTo("5")==0)
+                                    _buildStatusText("You cancelled this order item", Colors.red),
+                                  if (order.status.toString().compareTo("1")==0)
+                                    _buildStatusText("You accepted this order item", Colors.green),
+                                  if (order.status.toString().compareTo("2")==0)
+                                    _buildStatusText("You rejected this order item", Colors.redAccent),
+
+                                  // Cancel Button
+                                  if (order.status.toString().compareTo("0")==0 && order.orderItemStatus.toString().compareTo("0") == 0)
+                                    _buildActionButton("Cancel", Colors.white, Color(0xff0B7D97), () {
+                                      _showConfirmationDialog(
+                                        context,
+                                        "Do you want to cancel this order item?",
+                                            () => updateOrderCancelStatus(order.id.toString()),
+                                      );
+                                    }),
+
+                                  // Accept/Reject Buttons (on delivery)
+                                  if (order.status.toString().compareTo("0") == 0 &&
+                                      order.orderItemStatus.toString().compareTo("3") == 0 &&
+                                      isEligibleToShowAcceptReturn(item) &&
+                                      returnRequest.id.toString().isEmpty)
+                                    Padding(
+                                      padding: EdgeInsets.all(5),
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child: _buildActionButton("Reject", Colors.white, Color(0xff0B7D97), () {
+                                              // _showConfirmationDialog(
+                                              //   context,
+                                              //   "Do you want to return this order item?",
+                                              //       () => getReturnPolicies(order.productId.toString(), item),
+                                              // );
+                                            }),
+                                          ),
+                                          Expanded(
+                                            child: _buildActionButton("Accept", Color(0xff0B7D97), Colors.white, () {
+                                              updateOrderAcceptStatus(order.id.toString());
+                                            }),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  // Return Request Status
+                                  if (returnRequest.status.toString().compareTo("0") == 0 &&
+                                      returnRequest.refundStatus.toString().compareTo("0") == 0)
+                                    _buildStatusText(
+                                      "You have submitted a return request on ${getFormatedDate(returnRequest.createdAt.toString())}",
+                                      Color(0xff0B7D97),
+                                    ),
+                                  if (returnRequest.status.toString() == "1")
+                                    _buildStatusText(
+                                      "Your return request accepted" +
+                                          (returnRequest.refundStatus.toString() == "1"
+                                              ? "\nRefunded on ${returnRequest.refundedDate != null ? getFormatedDate(returnRequest.refundedDate.toString()) : ""}"
+                                              : "\nNot Refunded"),
+                                      Colors.redAccent,
+                                    ),
+                                ]
+                              ],
+
+                            ],
+                          ),
+                        ) ,
+
+
+
+
+                      ),
+                    );
+                  },
+                ) ,
+
+
+              ) :
+              Padding(padding: EdgeInsets.only(top:MediaQuery.of(context).size.height/2.2),
 
                 child: CircularProgressIndicator(),
 
@@ -223,7 +375,7 @@ class _OrdersState extends State<Orders> {
 
           ],
         ),
-        width: ResponsiveInfo.isMobile(context)?double.infinity : MediaQuery.of(context).size.width/3,
+        width: ResponsiveInfo.isMobile(context)?double.infinity : MediaQuery.of(context).size.width/2.5,
       )
 
 

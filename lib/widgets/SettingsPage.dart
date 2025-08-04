@@ -5,12 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:savekartweb/design/ResponsiveInfo.dart';
 import 'package:savekartweb/widgets/profile_page.dart';
+import 'package:savekartweb/widgets/wishlist.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../domain/profile_data_entity.dart';
 import '../web/AppStorage.dart';
 import '../web/apimethodes.dart';
 import '../web/ecommerce_api_helper.dart';
+import 'address_list.dart';
 import 'orders.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -45,9 +47,37 @@ class _SettingsPageState extends State<SettingsPage> {
 
       selectedoption=index;
     });
+    if(title.compareTo("My Address")==0) {
+      final result = await showDialog(
+        context: context,
+        barrierDismissible: true, // Tap outside to dismiss
+        builder: (BuildContext context) {
+          return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              elevation: 16,
+              child: SizedBox(
+                  width: MediaQuery
+                      .of(context)
+                      .size
+                      .width / 2.5, // Set your desired width
+                  height: double.infinity, // Set your desired height
+                  child: AddressList())
+          );
+        },
+      );
+    }
+
+    if(title.compareTo("Wishlist")==0)
+      {
+        setState(() {
+          currentwidget=Wishlist();
+        });
+      }
 
 
-    if(title.compareTo("Profile")==0)
+   else if(title.compareTo("Profile")==0)
     {
       setState(() {
         currentwidget=ProfilePage(profileDataData);
@@ -65,7 +95,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
    else if(title.compareTo("Help Desk")==0)
     {
-      ResponsiveInfo.showAlertDialog(context, "SaveKart", "Help Desk  No, : "+"9946109501");
+      ResponsiveInfo.showAlertDialog(context, "SaveKart", "Help Desk  No, : 9946109501");
     }
 
 

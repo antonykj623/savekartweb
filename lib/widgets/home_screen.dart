@@ -10,6 +10,7 @@ import 'package:savekartweb/widgets/SettingsPage.dart';
 import 'package:savekartweb/widgets/cart_screen.dart';
 import 'package:savekartweb/widgets/product_details.dart';
 import 'package:http/http.dart' as http;
+import 'package:savekartweb/widgets/productsbycategory.dart';
 import 'package:savekartweb/widgets/slider_widget.dart';
 import '../design/ResponsiveInfo.dart';
 import '../domain/product_with_category_entity.dart';
@@ -431,7 +432,7 @@ Container(),
 
 
 
-              return _buildCategory(categorylistdata![index].category!.categoryName!, subCategories: str);
+              return _buildCategory(categorylistdata![index].category!.categoryName!, index);
             }) : Container(),)
 
 
@@ -445,23 +446,61 @@ Container(),
     );
   }
 
-  Widget _buildCategory(String title, {List<CategoryListDataSubCategory>? subCategories}) {
+  Widget _buildCategory(String title, int index) {
 //List<CategoryListDataSubCategory>str=categorylistdata![index].subCategory!;
 
-   return Card(
-     child:ExpansionTile(
-       title: Text(title),
-       backgroundColor: Colors.grey[100], // Background color when expanded
-       collapsedBackgroundColor: Colors.transparent, // Background color when collapsed
-       children: subCategories?.map(
-             (sub) => ListTile(
-           title: Text(sub.subCategoryName!),
-         ),
-       ).toList() ?? [],
-     ) ,
+   return GestureDetector(
+     child: Container(
 
-     elevation: 5,
-   ) ;
+       child:Card(
+         child: Stack(
+           children: [
+
+             Align(
+                 alignment: FractionalOffset.centerLeft,
+                 child: Padding(padding: EdgeInsets.only(left: 10),
+                   child: Text(title),
+
+                 )
+
+
+
+
+             )
+           ],
+         ),
+
+
+
+
+
+
+         elevation: 5,
+       ) ,
+       height: 50,
+     ),
+     onTap: () async {
+
+       final result = await Navigator.push(
+         context,
+         MaterialPageRoute(builder: (context) => ProductsByCategoryScreen(categoryId: categorylistdata![index].category!.id.toString(),categoryname: categorylistdata![index].category!.categoryName.toString(),)),
+       );
+
+       if (result != null||result==null) {
+
+         getCartCount();
+         getWalletPoints();
+         getWalletBalanceAndPoints();
+
+       }
+
+
+
+     },
+   )
+
+
+       ;
 
   }
 
@@ -551,7 +590,7 @@ Container(),
 
     return
       SizedBox(
-          height: (chunkedList.length>0)? ((chunkedList.length)* screenwidth)-25 : screenwidth,
+          height: (chunkedList.length>0)? ((chunkedList.length)* screenwidth)-30 : screenwidth*1.1,
         // Set height to show cards properly
           child:Padding(
       padding:  EdgeInsets.all(10.0),

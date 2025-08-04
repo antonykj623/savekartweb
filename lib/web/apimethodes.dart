@@ -54,4 +54,9 @@ class Apimethodes{
     static String getWalletPointsTransaction="getWalletPointsTransaction.php";
     static String retryNewOrder="retryNewOrder.php";
     static String getCategoriesList="getCategoriesList.php";
+   static String getProductListBySubcategory="getProductListBySubcategory.php";
+   static String getPaymentCredentials="getPaymentCredentials.php";
+   static String generateHash="generateHash.php";
+   static String updateOrderStaus="updateOrderStaus.php";
+   static String processPayment="pg/processPayment.php";
 }

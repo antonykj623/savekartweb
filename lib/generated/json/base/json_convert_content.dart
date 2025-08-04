@@ -13,10 +13,12 @@ import 'package:savekartweb/domain/order_entity.dart';
 import 'package:savekartweb/domain/product_count_entity.dart';
 import 'package:savekartweb/domain/product_stock_entity.dart';
 import 'package:savekartweb/domain/product_with_category_entity.dart';
+import 'package:savekartweb/domain/products_entity.dart';
 import 'package:savekartweb/domain/profile_data_entity.dart';
 import 'package:savekartweb/domain/return_policy_entity.dart';
 import 'package:savekartweb/domain/user_address_entity.dart';
 import 'package:savekartweb/domain/wallet_balance_entity.dart';
+import 'package:savekartweb/domain/wishlist_entity.dart';
 
 JsonConvert jsonConvert = JsonConvert();
 
@@ -258,6 +260,14 @@ class JsonConvert {
       return data.map<ProductWithCategoryDataData>((Map<String, dynamic> e) =>
           ProductWithCategoryDataData.fromJson(e)).toList() as M;
     }
+    if (<ProductsEntity>[] is M) {
+      return data.map<ProductsEntity>((Map<String, dynamic> e) =>
+          ProductsEntity.fromJson(e)).toList() as M;
+    }
+    if (<ProductsData>[] is M) {
+      return data.map<ProductsData>((Map<String, dynamic> e) =>
+          ProductsData.fromJson(e)).toList() as M;
+    }
     if (<ProfileDataEntity>[] is M) {
       return data.map<ProfileDataEntity>((Map<String, dynamic> e) =>
           ProfileDataEntity.fromJson(e)).toList() as M;
@@ -289,6 +299,14 @@ class JsonConvert {
     if (<WalletBalanceData>[] is M) {
       return data.map<WalletBalanceData>((Map<String, dynamic> e) =>
           WalletBalanceData.fromJson(e)).toList() as M;
+    }
+    if (<WishlistEntity>[] is M) {
+      return data.map<WishlistEntity>((Map<String, dynamic> e) =>
+          WishlistEntity.fromJson(e)).toList() as M;
+    }
+    if (<WishlistData>[] is M) {
+      return data.map<WishlistData>((Map<String, dynamic> e) =>
+          WishlistData.fromJson(e)).toList() as M;
     }
 
     debugPrint("$M not found");
@@ -342,6 +360,8 @@ class JsonConvertClassCollection {
         .toString(): ProductWithCategoryDataCategory.fromJson,
     (ProductWithCategoryDataData).toString(): ProductWithCategoryDataData
         .fromJson,
+    (ProductsEntity).toString(): ProductsEntity.fromJson,
+    (ProductsData).toString(): ProductsData.fromJson,
     (ProfileDataEntity).toString(): ProfileDataEntity.fromJson,
     (ProfileDataData).toString(): ProfileDataData.fromJson,
     (ReturnPolicyEntity).toString(): ReturnPolicyEntity.fromJson,
@@ -350,6 +370,8 @@ class JsonConvertClassCollection {
     (UserAddressData).toString(): UserAddressData.fromJson,
     (WalletBalanceEntity).toString(): WalletBalanceEntity.fromJson,
     (WalletBalanceData).toString(): WalletBalanceData.fromJson,
+    (WishlistEntity).toString(): WishlistEntity.fromJson,
+    (WishlistData).toString(): WishlistData.fromJson,
   };
 
   bool containsKey(String type) {
