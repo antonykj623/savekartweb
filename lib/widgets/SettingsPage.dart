@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:savekartweb/design/ResponsiveInfo.dart';
 import 'package:savekartweb/widgets/profile_page.dart';
+import 'package:savekartweb/widgets/wallet_page.dart';
 import 'package:savekartweb/widgets/wishlist.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,7 +34,7 @@ class _SettingsPageState extends State<SettingsPage> {
     {'title': 'Orders', 'icon': Icons.shopping_bag},
     {'title': 'Wishlist', 'icon': Icons.favorite},
     {'title': 'My Address', 'icon': Icons.location_on},
-    {'title': 'Return Requests', 'icon': Icons.assignment_return},
+    // {'title': 'Return Requests', 'icon': Icons.assignment_return},
     {'title': 'SaveKart Wallet', 'icon': Icons.account_balance_wallet},
     {'title': 'Privacy Policy', 'icon': Icons.privacy_tip},
     {'title': 'Logout', 'icon': Icons.logout},
@@ -76,6 +77,12 @@ class _SettingsPageState extends State<SettingsPage> {
         });
       }
 
+    else if(title.compareTo("SaveKart Wallet")==0)
+    {
+      setState(() {
+        currentwidget=WalletPage();
+      });
+    }
 
    else if(title.compareTo("Profile")==0)
     {
@@ -155,8 +162,8 @@ class _SettingsPageState extends State<SettingsPage> {
     return 2;
   }
 
-  String name="";
-  int selectedoption=-1;
+  String name="Profile";
+  int selectedoption=0;
 
   @override
   void initState() {
@@ -174,7 +181,8 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
 
-        title: Text("",style: TextStyle(fontSize: 14),),
+        title: Text("Settings",style: TextStyle(fontSize: 14),),
+        centerTitle: false,
 
 
       ),
@@ -286,6 +294,8 @@ class _SettingsPageState extends State<SettingsPage> {
         String cleanedText = entity.data!.fullName.toString().replaceAll(RegExp(r'[^a-zA-Z0-9\s]'), '');
         print(cleanedText);
         name=cleanedText.trim();
+
+        currentwidget=ProfilePage(profileDataData);
       });
 
     }

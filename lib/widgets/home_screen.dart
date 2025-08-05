@@ -11,9 +11,11 @@ import 'package:savekartweb/widgets/cart_screen.dart';
 import 'package:savekartweb/widgets/product_details.dart';
 import 'package:http/http.dart' as http;
 import 'package:savekartweb/widgets/productsbycategory.dart';
+import 'package:savekartweb/widgets/searchproduct.dart';
 import 'package:savekartweb/widgets/slider_widget.dart';
 import '../design/ResponsiveInfo.dart';
 import '../domain/product_with_category_entity.dart';
+import '../domain/search_products_entity.dart';
 import '../domain/wallet_balance_entity.dart';
 import '../web/AppStorage.dart';
 import '../web/apimethodes.dart';
@@ -58,6 +60,7 @@ class _HomePageState extends State<HomePage> {
   List<CategoryListData>? categorylistdata = [];
   List<ProductWithCategoryData>? productbycategorydata = [];
   List<BannerData> bannerdata = [];
+  List<SearchProductsData>? suggestions = [];
 
   @override
   void initState() {
@@ -69,6 +72,32 @@ class _HomePageState extends State<HomePage> {
     getWalletBalanceAndPoints();
     getProductWithSubcategory();
     getCartCount();
+  }
+
+ Future<List<SearchProductsData>> filterProducts(String query) async {
+
+
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+
+    var response= await  apihelper.get(Apimethodes.getSearchedProducts+"?q="+t.toString()+"&word="+query);
+
+    var js= jsonDecode( response);
+
+    SearchProductsEntity entity=SearchProductsEntity.fromJson(js);
+
+    if(entity.status==1)
+    {
+
+
+        suggestions!.clear();
+        suggestions!.addAll(entity.data!);
+
+    }
+
+    return suggestions!;
+
   }
 
   getCartCount()async {
@@ -122,36 +151,92 @@ class _HomePageState extends State<HomePage> {
             height: 60,
             child: Padding(padding: EdgeInsets.all(10),
 
-              child:
+              child: RawAutocomplete<SearchProductsData>(
+                  optionsBuilder: (TextEditingValue textEditingValue) async {
+                    if (textEditingValue.text == '') {
+                      return  Iterable<SearchProductsData>.empty();
+                    }
+                    List<SearchProductsData> cc=await filterProducts(textEditingValue.text);
+                    suggestions=cc;
 
+                    return suggestions!;
+                  },
+                  onSelected: (SearchProductsData selection) {
+                    print('Selected: $selection');
+                  },
+                  fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      onEditingComplete: onEditingComplete,
+                      decoration: InputDecoration(
+                        hintText: 'Search .....',
+                        border: OutlineInputBorder(),
+                      ),
+                    );
+                  },
+                  optionsViewBuilder: (context, onSelected, options) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width/4 ,
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(8.0),
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final option = options.elementAt(index);
+                              return ListTile(
+                                leading: Image.network(ApiHelper.productimageurl +option.primeImage.toString(),width: 50,height: 50,),
+                                title: Text(option.productName.toString(),style: TextStyle(fontSize: 14),maxLines: 2,),
+                                onTap: (){
+                                  SearchProductsData pb=option;
+                                  ProductWithCategoryDataData pbc=new ProductWithCategoryDataData();
+                                  pbc.id=pb.id;
+                                  pbc.productCode=pb.productCode;
+                                  pbc.primeImage=pb.primeImage;
+                                  pbc.productName=pb.productName;
+                                  pbc.status=pb.status;
+                                  pbc.productSpec=pb.productSpec;
+                                  pbc.productDescription=pb.productDescription;
+                                  pbc.sideImage4=pb.sideImage4;
+                                  pbc.sideImage3=pb.sideImage3;
+                                  pbc.sideImage2=pb.sideImage2;
+                                  pbc.sideImage1=pb.sideImage1;
+                                  pbc.categoryId=pb.categoryId;
+                                  pbc.color=pb.color;
+                                  pbc.colorEnabled=pb.colorEnabled;
+                                  pbc.size=pb.size;
+                                  pbc.sizeEnabled=pb.sizeEnabled;
+                                  pbc.subCategoryId=pb.subCategoryId;
+                                  pbc.unitId=pb.unitId;
+                                  pbc.vendorId=pb.vendorId;
 
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: Icon(Icons.search), // 👈 Search icon at the start
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder:
+                                          (context) =>
+                                          ProductDetailPage(pbc)
+                                      )
+                                  );
+                                }
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                onChanged: (value) {
-                  // Add your search filter logic here
-                  print('Search query: $value');
-                },
-              )
-              ,
+
 
             ),
           ) : IconButton(onPressed: () async {
 
 
-        // final result = await Navigator.push(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => ProductSearchScreen()),
-        // );
+        final result = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProductSearchScreen()),
+        );
         //
         // if (result != null||result==null) {
         //
@@ -582,7 +667,8 @@ Container(),
     }
 
 
-    double screenwidth= (MediaQuery.of(context).size.width>1500)? ((MediaQuery.of(context).size.width/0.95)/ chunkSize) : (MediaQuery.of(context).size.width<1500&&MediaQuery.of(context).size.width>700)? ((MediaQuery.of(context).size.width/0.7)/chunkSize): ((MediaQuery.of(context).size.width/0.5)/chunkSize);
+    double screenwidth= (MediaQuery.of(context).size.width>1500)? ((MediaQuery.of(context).size.width/0.95)/ chunkSize) :
+    (MediaQuery.of(context).size.width<1500&&MediaQuery.of(context).size.width>700)? ((MediaQuery.of(context).size.width/0.69)/chunkSize): ((MediaQuery.of(context).size.width/0.49)/chunkSize);
 
 
     print(chunkedList.length);
@@ -615,7 +701,8 @@ Container(),
                   crossAxisCount: chunkSize, // 2 on mobile, 3 on larger screens
                   crossAxisSpacing: 5,
                   mainAxisSpacing: 5,
-                  childAspectRatio:MediaQuery.of(context).size.width<=690 ?0.6 :(MediaQuery.of(context).size.width>690 && MediaQuery.of(context).size.width<1500  )?0.65   : 1.1, // Adjust for card shape
+                  childAspectRatio:MediaQuery.of(context).size.width<=690 ?0.6 :(MediaQuery.of(context).size.width>690
+                      && MediaQuery.of(context).size.width<1500  )?0.62   : 1.1, // Adjust for card shape
                 ),
                 itemBuilder: (context, index) {
                   return GestureDetector(

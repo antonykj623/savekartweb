@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:savekartweb/widgets/searchproduct.dart';
 import 'package:savekartweb/widgets/zoomimage.dart';
 
 import '../design/ResponsiveInfo.dart';
@@ -12,6 +13,7 @@ import '../domain/product_count_entity.dart';
 import '../domain/product_stock_entity.dart';
 import '../domain/product_with_category_entity.dart';
 import '../domain/return_policy_entity.dart';
+import '../domain/search_products_entity.dart';
 import '../domain/wallet_balance_entity.dart';
 import '../web/AppStorage.dart';
 import '../web/apimethodes.dart';
@@ -65,7 +67,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
  double tempwalletpoints=0;
 
-
+  List<SearchProductsData>? suggestions = [];
   _ProductDetailPageState(this.productByCategoryDataData);
 
   @override
@@ -74,6 +76,33 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     super.initState();
     getProductCount();
   }
+
+  Future<List<SearchProductsData>> filterProducts(String query) async {
+
+
+    ApiHelper apihelper = new ApiHelper();
+
+    var t=ApiHelper.getTimeStamp();
+
+    var response= await  apihelper.get(Apimethodes.getSearchedProducts+"?q="+t.toString()+"&word="+query);
+
+    var js= jsonDecode( response);
+
+    SearchProductsEntity entity=SearchProductsEntity.fromJson(js);
+
+    if(entity.status==1)
+    {
+
+
+      suggestions!.clear();
+      suggestions!.addAll(entity.data!);
+
+    }
+
+    return suggestions!;
+
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -119,36 +148,94 @@ leading:GestureDetector(
             height: 60,
             child: Padding(padding: EdgeInsets.all(10),
 
-              child:
+              child: RawAutocomplete<SearchProductsData>(
+                  optionsBuilder: (TextEditingValue textEditingValue) async {
+                    if (textEditingValue.text == '') {
+                      return  Iterable<SearchProductsData>.empty();
+                    }
+                    List<SearchProductsData> cc=await filterProducts(textEditingValue.text);
+                    suggestions=cc;
 
+                    return suggestions!;
+                  },
+                  onSelected: (SearchProductsData selection) {
+                    print('Selected: $selection');
+                  },
+                  fieldViewBuilder: (context, controller, focusNode, onEditingComplete) {
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      onEditingComplete: onEditingComplete,
+                      decoration: InputDecoration(
+                        hintText: 'Search .....',
+                        border: OutlineInputBorder(),
+                      ),
+                    );
+                  },
+                  optionsViewBuilder: (context, onSelected, options) {
+                    return Align(
+                      alignment: Alignment.topLeft,
+                      child: Material(
+                        child: Container(
+                          width: MediaQuery.of(context).size.width/4 ,
+                          child: ListView.builder(
+                            padding: EdgeInsets.all(8.0),
+                            itemCount: options.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              final option = options.elementAt(index);
+                              return ListTile(
+                                  leading: Image.network(ApiHelper.productimageurl +option.primeImage.toString(),width: 50,height: 50,),
+                                  title: Text(option.productName.toString(),style: TextStyle(fontSize: 14),maxLines: 2,),
+                                  onTap: (){
+                                    SearchProductsData pb=option;
+                                    ProductWithCategoryDataData pbc=new ProductWithCategoryDataData();
+                                    pbc.id=pb.id;
+                                    pbc.productCode=pb.productCode;
+                                    pbc.primeImage=pb.primeImage;
+                                    pbc.productName=pb.productName;
+                                    pbc.status=pb.status;
+                                    pbc.productSpec=pb.productSpec;
+                                    pbc.productDescription=pb.productDescription;
+                                    pbc.sideImage4=pb.sideImage4;
+                                    pbc.sideImage3=pb.sideImage3;
+                                    pbc.sideImage2=pb.sideImage2;
+                                    pbc.sideImage1=pb.sideImage1;
+                                    pbc.categoryId=pb.categoryId;
+                                    pbc.color=pb.color;
+                                    pbc.colorEnabled=pb.colorEnabled;
+                                    pbc.size=pb.size;
+                                    pbc.sizeEnabled=pb.sizeEnabled;
+                                    pbc.subCategoryId=pb.subCategoryId;
+                                    pbc.unitId=pb.unitId;
+                                    pbc.vendorId=pb.vendorId;
 
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: Icon(Icons.search), // 👈 Search icon at the start
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 20),
+                                    Navigator.push(context,
+                                        MaterialPageRoute(builder:
+                                            (context) =>
+                                            ProductDetailPage(pbc)
+                                        )
+                                    );
+                                  }
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                onChanged: (value) {
-                  // Add your search filter logic here
-                  print('Search query: $value');
-                },
-              )
-              ,
+
+
+
 
             ),
           ) : IconButton(onPressed: () async {
 
 
-            // final result = await Navigator.push(
-            //   context,
-            //   MaterialPageRoute(builder: (context) => ProductSearchScreen()),
-            // );
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProductSearchScreen()),
+            );
             //
             // if (result != null||result==null) {
             //

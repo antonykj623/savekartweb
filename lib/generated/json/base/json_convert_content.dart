@@ -16,8 +16,10 @@ import 'package:savekartweb/domain/product_with_category_entity.dart';
 import 'package:savekartweb/domain/products_entity.dart';
 import 'package:savekartweb/domain/profile_data_entity.dart';
 import 'package:savekartweb/domain/return_policy_entity.dart';
+import 'package:savekartweb/domain/search_products_entity.dart';
 import 'package:savekartweb/domain/user_address_entity.dart';
 import 'package:savekartweb/domain/wallet_balance_entity.dart';
+import 'package:savekartweb/domain/wallet_list_entity.dart';
 import 'package:savekartweb/domain/wishlist_entity.dart';
 
 JsonConvert jsonConvert = JsonConvert();
@@ -284,6 +286,14 @@ class JsonConvert {
       return data.map<ReturnPolicyData>((Map<String, dynamic> e) =>
           ReturnPolicyData.fromJson(e)).toList() as M;
     }
+    if (<SearchProductsEntity>[] is M) {
+      return data.map<SearchProductsEntity>((Map<String, dynamic> e) =>
+          SearchProductsEntity.fromJson(e)).toList() as M;
+    }
+    if (<SearchProductsData>[] is M) {
+      return data.map<SearchProductsData>((Map<String, dynamic> e) =>
+          SearchProductsData.fromJson(e)).toList() as M;
+    }
     if (<UserAddressEntity>[] is M) {
       return data.map<UserAddressEntity>((Map<String, dynamic> e) =>
           UserAddressEntity.fromJson(e)).toList() as M;
@@ -299,6 +309,14 @@ class JsonConvert {
     if (<WalletBalanceData>[] is M) {
       return data.map<WalletBalanceData>((Map<String, dynamic> e) =>
           WalletBalanceData.fromJson(e)).toList() as M;
+    }
+    if (<WalletListEntity>[] is M) {
+      return data.map<WalletListEntity>((Map<String, dynamic> e) =>
+          WalletListEntity.fromJson(e)).toList() as M;
+    }
+    if (<WalletListData>[] is M) {
+      return data.map<WalletListData>((Map<String, dynamic> e) =>
+          WalletListData.fromJson(e)).toList() as M;
     }
     if (<WishlistEntity>[] is M) {
       return data.map<WishlistEntity>((Map<String, dynamic> e) =>
@@ -366,10 +384,14 @@ class JsonConvertClassCollection {
     (ProfileDataData).toString(): ProfileDataData.fromJson,
     (ReturnPolicyEntity).toString(): ReturnPolicyEntity.fromJson,
     (ReturnPolicyData).toString(): ReturnPolicyData.fromJson,
+    (SearchProductsEntity).toString(): SearchProductsEntity.fromJson,
+    (SearchProductsData).toString(): SearchProductsData.fromJson,
     (UserAddressEntity).toString(): UserAddressEntity.fromJson,
     (UserAddressData).toString(): UserAddressData.fromJson,
     (WalletBalanceEntity).toString(): WalletBalanceEntity.fromJson,
     (WalletBalanceData).toString(): WalletBalanceData.fromJson,
+    (WalletListEntity).toString(): WalletListEntity.fromJson,
+    (WalletListData).toString(): WalletListData.fromJson,
     (WishlistEntity).toString(): WishlistEntity.fromJson,
     (WishlistData).toString(): WishlistData.fromJson,
   };

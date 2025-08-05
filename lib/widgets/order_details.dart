@@ -160,28 +160,28 @@ class _OrderItemDetailsScreenState extends State<OrderItemDetailsScreen> {
               ,
               SizedBox(height: 20),
 
-              (orderDetailsData.paymentDetails?.paymentStatus?.compareTo("2")==0 ||
-                  orderDetailsData.paymentDetails?.paymentStatus?.compareTo("0")==0)?
-              Padding(
-                padding: EdgeInsets.all(ResponsiveInfo.isMobile(context)?15:20),
-                child:   Container(
-                  width: ResponsiveInfo.isMobile(context)?120:170,
-                  height: ResponsiveInfo.isMobile(context)?50:70,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xff0B7D97), // background
-                      foregroundColor: Colors.white, // foreground
-                    ),
-                    onPressed: () async {
-
-
-                      showRetryDialog();
-
-
-                    },
-                    child: Text('Retry',style: TextStyle(fontSize: ResponsiveInfo.isMobile(context)?14:17),),
-                  ),
-                ),)  :Container()
+              // (orderDetailsData.paymentDetails?.paymentStatus?.compareTo("2")==0 ||
+              //     orderDetailsData.paymentDetails?.paymentStatus?.compareTo("0")==0)?
+              // Padding(
+              //   padding: EdgeInsets.all(ResponsiveInfo.isMobile(context)?15:20),
+              //   child:   Container(
+              //     width: ResponsiveInfo.isMobile(context)?120:170,
+              //     height: ResponsiveInfo.isMobile(context)?50:70,
+              //     child: ElevatedButton(
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: Color(0xff0B7D97), // background
+              //         foregroundColor: Colors.white, // foreground
+              //       ),
+              //       onPressed: () async {
+              //
+              //
+              //         showRetryDialog();
+              //
+              //
+              //       },
+              //       child: Text('Retry',style: TextStyle(fontSize: ResponsiveInfo.isMobile(context)?14:17),),
+              //     ),
+              //   ),)  :Container()
 
             ],
           ),
