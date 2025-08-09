@@ -32,7 +32,7 @@ class _ProductSearchScreenState extends State<ProductSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Product Search")),
+      appBar: AppBar(title: Text("")),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -44,9 +44,12 @@ class _ProductSearchScreenState extends State<ProductSearchScreen> {
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.search),
               ),
+
               onChanged:(txt){
                 filterProducts(txt.toString());
               },
+
+
             ),
             SizedBox(height: 16),
             Expanded(
