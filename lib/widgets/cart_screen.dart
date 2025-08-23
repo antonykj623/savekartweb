@@ -54,7 +54,7 @@ class _CartPageState extends State<CartPage> {
       _totalAmount = 0,
       totalamount_to_paid = 0;
   bool iswalletused = false;
-  String orderid = "0";
+  String orderid = "0",cartcount="0";
 
   @override
   void initState() {
@@ -64,6 +64,7 @@ class _CartPageState extends State<CartPage> {
     getWalletBalanceAndPoints();
     getAllAddress();
     getCartItems();
+    getCartCount();
     wlCheckoutFlutter.on(WeiplCheckoutFlutter.wlResponse, handleResponse);
   }
 
@@ -285,7 +286,7 @@ class _CartPageState extends State<CartPage> {
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: 20),
-                ElevatedButton(
+                (cartcount.compareTo("0")!=0)?  ElevatedButton(
                   onPressed: () {
                     if (selected_addressid?.compareTo("0") != 0) {
                       if (_totalAmount == 0) {
@@ -307,7 +308,7 @@ class _CartPageState extends State<CartPage> {
                   style: ElevatedButton.styleFrom(
                       minimumSize: Size(double.infinity, 50)),
                   child: Text('Pay Now'),
-                )
+                ) : Container()
               ],
             ),
           ),
@@ -593,6 +594,32 @@ class _CartPageState extends State<CartPage> {
   }
 
 
+  getCartCount()async {
+    // ResponsiveInfo.ShowProgressDialog(context);
+    ApiHelper apihelper = new ApiHelper();
+    String? userid=await AppStorage.getString(AppStorage.id);
+    var t=ApiHelper.getTimeStamp();
+
+    var response= await  apihelper.get(Apimethodes.getCartDataCount+"?q="+t.toString()+"&userid="+userid.toString());
+
+    var js= jsonDecode( response) ;
+
+    if(js['status']==1)
+    {
+
+      String c=js['data'].toString();
+
+      setState(() {
+        cartcount=c;
+
+      });
+
+    }
+
+  }
+
+
+
   void showSingleSelectionDialog() async {
     _selectedOption = "0";
     final List<String> _options = ["Cash on Delivery", "Online Payment"];
@@ -618,7 +645,8 @@ class _CartPageState extends State<CartPage> {
                     else {
                       Navigator.pop(context);
 
-                        PlaceOrder(totalamount_to_paid.toString(),iswalletused,_totalAmount.toString(),2,usedwalletamount.toString());
+                        // PlaceOrder(totalamount_to_paid.toString(),iswalletused,_totalAmount.toString(),2,usedwalletamount.toString());
+                      PlaceOrder(totalamount_to_paid.toString(),iswalletused,"1".toString(),2,usedwalletamount.toString());
 
 
                     }
@@ -1050,10 +1078,11 @@ class _CartPageState extends State<CartPage> {
         String value = data2["value"];
         print(value);
 
+      String? userid=await  AppStorage.getString(AppStorage.id);
 
 
         String urldata=ApiHelper.baseUrl+Apimethodes.processPayment+"?token="+value+"&merchantcode="+merchantcode+"&customerid="+customerid+
-    "&phone="+phone+"&email="+email+"&txnid="+txnid+"&paidamount="+paidamount;
+    "&phone="+phone+"&email="+email+"&txnid="+txnid+"&paidamount="+paidamount+"&userid="+userid.toString();
 
         final Uri url = Uri.parse(urldata);
         if (!await launchUrl(url, mode: LaunchMode.inAppWebView)) {
@@ -1067,52 +1096,6 @@ class _CartPageState extends State<CartPage> {
 
 
 
-
-
-
-        // ApiHelper apihelper4 = new ApiHelper();
-        // var t4 = ApiHelper.getTimeStamp();
-        //
-        //
-        //
-        //
-        // var reqJson = {
-        //   "features": {
-        //     "enableAbortResponse": true,
-        //     "enableExpressPay": true,
-        //     "enableInstrumentDeRegistration": true,
-        //     "enableMerTxnDetails": true
-        //   },
-        //   "consumerData": {
-        //     "deviceId": "AndroidSH2",
-        //     "token": value,
-        //     "paymentMode": "all",
-        //     "merchantLogoUrl":
-        //     "https://mysaveapp.com/ic_launcher.png",
-        //     "merchantId": merchantcode,
-        //     "currency": "INR",
-        //     "consumerId": customerid,
-        //     "consumerMobileNo": phone,
-        //     "consumerEmailId": email,
-        //     "txnId": txnid, //Unique merchant transaction ID
-        //     "items": [
-        //       {"itemId": "first", "amount": paidamount, "comAmt": "0"}
-        //     ],
-        //     "customStyle": {
-        //       "PRIMARY_COLOR_CODE":
-        //       "#0B7D97", //merchant primary color code
-        //       "SECONDARY_COLOR_CODE":
-        //       "#FFFFFF", //provide merchant's suitable color code
-        //       "BUTTON_COLOR_CODE_1":
-        //       "#0B7D97", //merchant"s button background color code
-        //       "BUTTON_COLOR_CODE_2":
-        //       "#FFFFFF" //provide merchant's suitable color code for button text
-        //     }
-        //   }
-        // };
-        //
-        //
-        // wlCheckoutFlutter.open(reqJson);
       }
 
 

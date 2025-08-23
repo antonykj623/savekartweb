@@ -358,11 +358,9 @@ class _HomePageState extends State<HomePage> {
       body: Row(
         children: [
         // Sidebar
-          (screenWidth>700)?    getMenuWidget() :
+          (screenWidth>700)?    getMenuWidget() : Container(),
 
-Container(),
-
-    // Main Content
+  
     Expanded(
     child: SingleChildScrollView(
 
